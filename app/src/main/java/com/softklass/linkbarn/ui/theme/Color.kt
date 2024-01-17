@@ -17,5 +17,3 @@ val LightOrange = Color(221, 179, 105)
 val DarkOrange = Color(195, 139, 26)
 val DarkGray = Color(57, 53, 44)
 val Dark = Color(5, 3, 4)
-
-
