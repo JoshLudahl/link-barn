@@ -27,7 +27,6 @@ Some of the features include:
 - Labels
 - Sorting
 
-
 ## Privacy
 The application cares about your privacy and as such, doesn't collect or share any data. The application is ad-free.
 You can read more about the privacy in the [privacy policy](https://softklass/link-barn/privacy.html).
