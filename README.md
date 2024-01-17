@@ -13,6 +13,7 @@ The application is build using the following libraries from Android and other th
 - [AppSearch](https://developer.android.com/develop/ui/views/search/appsearch)
 - [Jetpack Compose](https://developer.android.com/jetpack/compose)
 - [DataStore](https://developer.android.com/topic/libraries/architecture/datastore)
+- Icons from [Tabler Icons](https://tablericons.com/)
 
 ## Key Features
 The application is designed to manager links. Sometimes, we keep tabs open in the browser so we can read them later, etc.
