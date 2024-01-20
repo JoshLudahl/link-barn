@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Link Barn</string>
+    <string name="main_screen_title">Current Links</string>
 </resources>
