@@ -149,9 +149,7 @@ fun ModalBottomSheetSample() {
 
         ModalBottomSheet(
             onDismissRequest = { openBottomSheet = false },
-            sheetState = bottomSheetState,
-            windowInsets = windowInsets
-        ) {
+            sheetState = bottomSheetState) {
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
 

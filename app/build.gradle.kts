@@ -1,11 +1,13 @@
 plugins {
     id("com.android.application")
+    id("kotlin-android")
     id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.softklass.linkbarn"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.softklass.linkbarn"
@@ -31,6 +33,9 @@ android {
 
         debug {
             isMinifyEnabled = false
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = " debug"
+            resValue(type = "string", name = "app_name", value = "Link Barn debug")
         }
     }
     compileOptions {
@@ -42,6 +47,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
