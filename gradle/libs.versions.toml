@@ -1,16 +1,16 @@
 [versions]
 activityCompose = "1.10.0"
-androidApplication = "8.8.0"
+androidApplication = "8.8.1"
 androidKotlin = "2.1.10"
 appsearchVersion = "1.1.0-beta01"
-composeBom = "2025.01.01"
+composeBom = "2025.02.00"
 coreKtx = "1.15.0"
 datastorePreferences = "1.1.2"
 espressoCore = "3.6.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 lifecycleRuntimeKtx = "2.8.7"
-navigationCompose = "2.8.6"
+navigationCompose = "2.8.7"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
