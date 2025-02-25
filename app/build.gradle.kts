@@ -1,8 +1,9 @@
 plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.kotlin)
     alias(libs.plugins.compose.compiler)
+    kotlin("kapt")
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -12,7 +13,8 @@ android {
     defaultConfig {
         applicationId = "com.softklass.linkbarn"
         minSdk = 26
-        targetSdk = 34
+
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -74,6 +76,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.core)
+    testImplementation(libs.mockito.kotlin)
 
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,7 +91,12 @@ dependencies {
     implementation(libs.androidx.datastore.preferences.core)
 
     implementation(libs.androidx.appsearch)
-    annotationProcessor(libs.androidx.appsearch.compiler)
+    kapt(libs.androidx.appsearch.compiler)
     implementation(libs.androidx.appsearch.local.storage)
     implementation(libs.androidx.appsearch.platform.storage)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.hilt.navigation.compose)
 }

@@ -1,8 +1,11 @@
 package com.softklass.linkbarn.data.repository
 
 import com.softklass.linkbarn.data.model.Link
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class LinkDataRepository {
+@Singleton
+class LinkDataRepository @Inject constructor() {
 
     fun getAllLinks(): List<Link> {
         return listOf()
