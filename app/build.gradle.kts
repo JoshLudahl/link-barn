@@ -3,7 +3,9 @@ plugins {
     alias(libs.plugins.android.kotlin)
     alias(libs.plugins.compose.compiler)
     kotlin("kapt")
+    id("kotlin-parcelize")
     alias(libs.plugins.hilt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -43,6 +45,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
     kotlinOptions {
         jvmTarget = JavaVersion.VERSION_17.toString()
@@ -62,6 +65,7 @@ android {
 }
 
 dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -82,7 +86,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.room.testing)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
@@ -99,4 +104,17 @@ dependencies {
     implementation(libs.hilt.android)
     kapt(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
+
+    // Room
+    api("androidx.room:room-runtime:2.5.2")
+    api("androidx.room:room-ktx:2.5.2")
+    api("androidx.room:room-common:2.5.2")
+    ksp("androidx.room:room-compiler:2.5.2")
+    testImplementation("androidx.room:room-testing:2.5.2")
+
+    // Gson for JSON serialization
+    implementation(libs.gson)
+
+    // Force project sync
+    implementation(platform(libs.androidx.compose.bom))
 }
