@@ -1,7 +1,11 @@
 package com.softklass.linkbarn.di
 
 import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.softklass.linkbarn.data.db.AppDatabase
+import com.softklass.linkbarn.data.db.dao.LinkDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,5 +27,10 @@ object AppModule {
             DATABASE_NAME
         ).fallbackToDestructiveMigration() // During development, we'll allow destructive migrations
             .build()
+    }
+    @Provides
+    @Singleton
+    fun provideLinkDao(database: AppDatabase): LinkDao {
+        return database.linkDao()
     }
 }

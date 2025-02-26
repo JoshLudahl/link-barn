@@ -13,6 +13,14 @@ android {
     compileSdk = 35
 
     defaultConfig {
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments += mapOf(
+                    "room.schemaLocation" to "$projectDir/schemas",
+                    "room.incremental" to "true"
+                )
+            }
+        }
         applicationId = "com.softklass.linkbarn"
         minSdk = 26
 
@@ -65,7 +73,7 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -106,11 +114,11 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
 
     // Room
-    api("androidx.room:room-runtime:2.5.2")
-    api("androidx.room:room-ktx:2.5.2")
-    api("androidx.room:room-common:2.5.2")
-    ksp("androidx.room:room-compiler:2.5.2")
-    testImplementation("androidx.room:room-testing:2.5.2")
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.room.common)
+    ksp(libs.androidx.room.compiler)
+    ksp(libs.androidx.room.compiler)
 
     // Gson for JSON serialization
     implementation(libs.gson)
