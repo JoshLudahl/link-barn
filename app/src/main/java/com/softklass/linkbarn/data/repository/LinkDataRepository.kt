@@ -2,12 +2,11 @@ package com.softklass.linkbarn.data.repository
 
 import com.softklass.linkbarn.data.db.dao.LinkDao
 import com.softklass.linkbarn.data.model.Link
-import com.softklass.linkbarn.data.model.Status
 import kotlinx.coroutines.flow.Flow
+import java.net.URI
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
 class LinkDataRepository @Inject constructor(
     private val linkDao: LinkDao
 ) {
@@ -15,7 +14,7 @@ class LinkDataRepository @Inject constructor(
 
     fun getLinkById(id: String): Flow<Link?> = linkDao.getLinkById(id)
 
-    fun getLinksByStatus(status: Status): Flow<List<Link>> = linkDao.getLinksByStatus(status)
+    suspend fun getLinkByUri(uri: URI): Link? = linkDao.getLinkByUri(uri)
 
     suspend fun insertLink(link: Link) = linkDao.insertLink(link)
 

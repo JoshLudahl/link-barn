@@ -7,8 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.softklass.linkbarn.data.model.Link
-import com.softklass.linkbarn.data.model.Status
 import kotlinx.coroutines.flow.Flow
+import java.net.URI
 
 @Dao
 interface LinkDao {
@@ -17,9 +17,6 @@ interface LinkDao {
 
     @Query("SELECT * FROM links WHERE id = :id")
     fun getLinkById(id: String): Flow<Link?>
-
-    @Query("SELECT * FROM links WHERE status = :status")
-    fun getLinksByStatus(status: Status): Flow<List<Link>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLink(link: Link)
@@ -32,4 +29,7 @@ interface LinkDao {
 
     @Query("DELETE FROM links WHERE id = :id")
     suspend fun deleteLinkById(id: String)
+
+    @Query("SELECT * FROM links WHERE uri = :uri LIMIT 1")
+    suspend fun getLinkByUri(uri: URI): Link?
 }

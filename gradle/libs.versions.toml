@@ -9,7 +9,9 @@ hiltVersion = "2.55"
 hiltNavigationCompose = "1.2.0"
 mockitoCore = "5.15.2"
 mockitoKotlin = "4.1.0"
-androidApplication = "8.8.1"
+mockitoAndroid = "5.15.2"
+coroutinesTest = "1.7.3"
+androidApplication = "8.8.0-alpha05"
 androidKotlin = "2.1.10"
 appsearchVersion = "1.1.0-beta01"
 composeBom = "2025.02.00"
@@ -51,6 +53,8 @@ hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", ve
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }

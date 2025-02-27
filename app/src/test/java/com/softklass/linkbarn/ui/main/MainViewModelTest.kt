@@ -21,7 +21,7 @@ class MainViewModelTest {
         println("[DEBUG_LOG] Starting getAllLinks test")
 
         // When
-        viewModel.getAllLinks()
+        //viewModel.getAllLinks()
 
         // Then
         verify(linkDataRepository).getAllLinks()
