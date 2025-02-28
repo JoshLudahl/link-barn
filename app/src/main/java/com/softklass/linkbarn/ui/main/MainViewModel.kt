@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.softklass.linkbarn.utils.UrlValidator
 import java.net.URI
 import javax.inject.Inject
 
@@ -45,12 +46,12 @@ class MainViewModel @Inject constructor(
                     return@launch
                 }
 
-                val uri = try {
-                    URI(url)
-                } catch (e: Exception) {
-                    _uiState.value = AddLinkUiState.Error("Invalid URL format")
+                if (!UrlValidator.isValid(url)) {
+                    _uiState.value = AddLinkUiState.Error("Invalid URL format. URL must be a valid http:// or https:// address")
                     return@launch
                 }
+
+                val uri = URI(url)
 
                 // Check if URL already exists
                 val existingLink = linkRepository.getLinkByUri(uri)
@@ -74,6 +75,16 @@ class MainViewModel @Inject constructor(
 
     fun resetState() {
         _uiState.value = AddLinkUiState.Initial
+    }
+
+    fun deleteLink(link: Link) {
+        viewModelScope.launch(dispatcher) {
+            try {
+                linkRepository.deleteLink(link.id)
+            } catch (e: Exception) {
+                // Handle error if needed
+            }
+        }
     }
 }
 

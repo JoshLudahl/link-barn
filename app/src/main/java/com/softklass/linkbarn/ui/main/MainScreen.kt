@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Delete
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
@@ -146,7 +147,7 @@ fun MainScreen(
                         }
                     } else {
                         items(links) { link ->
-                            LinkItem(link = link)
+                            LinkItem(link = link, viewModel = viewModel)
                         }
                     }
                 }
@@ -157,7 +158,7 @@ fun MainScreen(
 }
 
 @Composable
-fun LinkItem(link: Link) {
+fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     val context = LocalContext.current
 
     ElevatedCard(
@@ -189,16 +190,30 @@ fun LinkItem(link: Link) {
                     color = Color.Gray
                 )
             }
-            Icon(
-                imageVector = Icons.Filled.ExitToApp,
-                contentDescription = "Open in browser",
-                modifier = Modifier
-                    .size(24.dp)
-                    .clickable {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link.uri.toString()))
-                        context.startActivity(intent)
-                    }
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Delete link",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            viewModel.deleteLink(link)
+                        }
+                )
+                Icon(
+                    imageVector = Icons.Filled.ExitToApp,
+                    contentDescription = "Open in browser",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link.uri.toString()))
+                            context.startActivity(intent)
+                        }
+                )
+            }
         }
     }
 }
