@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.clickable
@@ -201,6 +202,20 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                         .size(24.dp)
                         .clickable {
                             viewModel.deleteLink(link)
+                        }
+                )
+                Icon(
+                    imageVector = Icons.Filled.Share,
+                    contentDescription = "Share link",
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clickable {
+                            val sendIntent = Intent().apply {
+                                action = Intent.ACTION_SEND
+                                putExtra(Intent.EXTRA_TEXT, link.uri.toString())
+                                type = "text/plain"
+                            }
+                            context.startActivity(Intent.createChooser(sendIntent, null))
                         }
                 )
                 Icon(
