@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -34,6 +35,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.SwipeToDismiss
+import androidx.compose.material.DismissDirection
+import androidx.compose.material.DismissValue
+import androidx.compose.material.DismissState
+import androidx.compose.material.rememberDismissState
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -84,7 +91,6 @@ fun MainScreen(
             Column(
                 modifier = Modifier
                     .weight(2f)
-                    .background(color = DarkOrange)
             ) {
                 Text(
                     fontSize = 22.sp,
@@ -158,79 +164,104 @@ fun MainScreen(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     val context = LocalContext.current
-
-    ElevatedCard(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 16.dp)
-            ) {
-                Text(
-                    text = link.name ?: "Untitled",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = link.uri.toString(),
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
+    val dismissState = rememberDismissState(
+        confirmStateChange = { dismissValue ->
+            if (dismissValue == DismissValue.DismissedToStart) {
+                viewModel.deleteLink(link)
+                true
+            } else {
+                false
             }
+        }
+    )
+
+    SwipeToDismiss(
+        state = dismissState,
+        directions = setOf(DismissDirection.EndToStart),
+        background = {
+            val color = Color.White.copy(alpha = 0.8f)
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color)
+                    .padding(12.dp, 8.dp),
+                horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Delete link",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable {
-                            viewModel.deleteLink(link)
-                        }
-                )
-                Icon(
-                    imageVector = Icons.Filled.Share,
-                    contentDescription = "Share link",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable {
-                            val sendIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_TEXT, link.uri.toString())
-                                type = "text/plain"
-                            }
-                            context.startActivity(Intent.createChooser(sendIntent, null))
-                        }
-                )
-                Icon(
-                    imageVector = Icons.Filled.ExitToApp,
-                    contentDescription = "Open in browser",
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable {
-                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link.uri.toString()))
-                            context.startActivity(intent)
-                        }
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = Color.White
                 )
             }
+        },
+        dismissContent = {
+            ElevatedCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 16.dp)
+                    ) {
+                        Text(
+                            text = link.name ?: "Untitled",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = link.uri.toString(),
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            contentDescription = "Share link",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    val sendIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, link.uri.toString())
+                                        type = "text/plain"
+                                    }
+                                    context.startActivity(Intent.createChooser(sendIntent, null))
+                                }
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.ExitToApp,
+                            contentDescription = "Open in browser",
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link.uri.toString()))
+                                    context.startActivity(intent)
+                                }
+                        )
+                    }
+                }
+            }
         }
-    }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
