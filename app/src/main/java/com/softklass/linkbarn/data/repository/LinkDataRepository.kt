@@ -2,13 +2,12 @@ package com.softklass.linkbarn.data.repository
 
 import com.softklass.linkbarn.data.db.dao.LinkDao
 import com.softklass.linkbarn.data.model.Link
-import kotlinx.coroutines.flow.Flow
 import java.net.URI
 import javax.inject.Inject
-import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 
 class LinkDataRepository @Inject constructor(
-    private val linkDao: LinkDao
+    private val linkDao: LinkDao,
 ) {
     fun getAllLinks(): Flow<List<Link>> = linkDao.getAllLinks()
 

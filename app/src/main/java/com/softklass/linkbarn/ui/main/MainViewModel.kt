@@ -4,7 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.LinkDataRepository
+import com.softklass.linkbarn.utils.UrlValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.URI
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,14 +15,11 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import com.softklass.linkbarn.utils.UrlValidator
-import java.net.URI
-import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val linkRepository: LinkDataRepository,
-    private val dispatcher: CoroutineDispatcher = Dispatchers.IO
+    private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AddLinkUiState>(AddLinkUiState.Initial)
@@ -28,7 +28,7 @@ class MainViewModel @Inject constructor(
     val links: StateFlow<List<Link>> = linkRepository.getAllLinks().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = emptyList()
+        initialValue = emptyList(),
     )
 
     fun addLink(name: String, url: String) {
@@ -47,7 +47,9 @@ class MainViewModel @Inject constructor(
                 }
 
                 if (!UrlValidator.isValid(url)) {
-                    _uiState.value = AddLinkUiState.Error("Invalid URL format. URL must be a valid http:// or https:// address")
+                    _uiState.value = AddLinkUiState.Error(
+                        "Invalid URL format. URL must be a valid http:// or https:// address",
+                    )
                     return@launch
                 }
 
@@ -63,7 +65,7 @@ class MainViewModel @Inject constructor(
                 // Create and insert new link
                 val newLink = Link(
                     name = name,
-                    uri = uri
+                    uri = uri,
                 )
                 linkRepository.insertLink(newLink)
                 _uiState.value = AddLinkUiState.Success

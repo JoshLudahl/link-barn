@@ -6,8 +6,8 @@ package com.softklass.linkbarn.navigation
  *
  */
 sealed class Screen(
-    val route: String
+    val route: String,
 ) {
-    data object Home: Screen("home_screen")
-    data object Settings: Screen("settings_screen")
+    data object Home : Screen("home_screen")
+    data object Settings : Screen("settings_screen")
 }

@@ -8,10 +8,10 @@ import com.softklass.linkbarn.data.model.Link
 
 @Database(
     entities = [
-        Link::class
+        Link::class,
     ],
     version = 1,
-    exportSchema = true
+    exportSchema = true,
 )
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {

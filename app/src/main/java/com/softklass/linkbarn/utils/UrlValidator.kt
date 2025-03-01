@@ -7,7 +7,7 @@ object UrlValidator {
         return try {
             val uri = URI(url)
             uri.scheme != null && (uri.scheme.equals("http", true) || uri.scheme.equals("https", true)) &&
-                    !uri.host.isNullOrBlank()
+                !uri.host.isNullOrBlank()
         } catch (e: Exception) {
             false
         }

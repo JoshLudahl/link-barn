@@ -23,9 +23,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ElevatedSuggestionChip
@@ -34,10 +31,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SuggestionChipDefaults
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -70,24 +70,22 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(
     navController: NavController,
-    viewModel: MainViewModel = hiltViewModel()
+    viewModel: MainViewModel = hiltViewModel(),
 ) {
-
     Column(modifier = Modifier.fillMaxWidth()) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(intrinsicSize = IntrinsicSize.Max),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
                 modifier = Modifier
-                    .weight(2f)
+                    .weight(2f),
             ) {
                 Text(
                     fontSize = 22.sp,
-                    text = stringResource(id = R.string.main_screen_title)
+                    text = stringResource(id = R.string.main_screen_title),
                 )
                 Text(text = "Header Sub title")
             }
@@ -97,25 +95,27 @@ fun MainScreen(
                     .fillMaxHeight()
                     .weight(1f)
                     .background(color = Dark),
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Row(
                     modifier = Modifier.fillMaxHeight(),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     ModalBottomSheetAddUrl()
                 }
             }
             Spacer(modifier = Modifier.width(16.dp))
         }
-        Spacer(modifier = Modifier
-            .fillMaxWidth()
-            .height(16.dp))
+        Spacer(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp),
+        )
         Row {
             Column(
                 modifier = Modifier
                     .background(color = LightOrange)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
             ) {
                 Text(text = "Category Section")
             }
@@ -125,14 +125,14 @@ fun MainScreen(
             Column(
                 modifier = Modifier
                     .background(color = Light)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
             ) {
                 val links by viewModel.links.collectAsState()
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     if (links.isEmpty()) {
                         item {
@@ -142,7 +142,7 @@ fun MainScreen(
                                     .fillMaxWidth()
                                     .padding(16.dp),
                                 textAlign = TextAlign.Center,
-                                color = Color.Gray
+                                color = Color.Gray,
                             )
                         }
                     } else {
@@ -154,7 +154,6 @@ fun MainScreen(
             }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -169,7 +168,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
             } else {
                 false
             }
-        }
+        },
     )
 
     SwipeToDismissBox(
@@ -184,12 +183,12 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                     .background(color)
                     .padding(12.dp, 8.dp),
                 horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
-                    tint = Color.White
+                    tint = Color.White,
                 )
             }
         },
@@ -197,35 +196,35 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp),
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(end = 16.dp)
+                            .padding(end = 16.dp),
                     ) {
                         Text(
                             text = link.name ?: "Untitled",
                             fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = link.uri.toString(),
                             fontSize = 14.sp,
-                            color = Color.Gray
+                            color = Color.Gray,
                         )
                     }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
                             imageVector = Icons.Filled.Share,
@@ -239,7 +238,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                         type = "text/plain"
                                     }
                                     context.startActivity(Intent.createChooser(sendIntent, null))
-                                }
+                                },
                         )
                         Icon(
                             imageVector = Icons.Filled.ExitToApp,
@@ -249,12 +248,12 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                 .clickable {
                                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link.uri.toString()))
                                     context.startActivity(intent)
-                                }
+                                },
                         )
                     }
                 }
             }
-        }
+        },
     )
 }
 
@@ -280,7 +279,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 errorMessage = null
                 url = ""
                 name = ""
-                scope.launch { 
+                scope.launch {
                     bottomSheetState.hide()
                     openBottomSheet = false
                 }
@@ -295,57 +294,57 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
     // App content
     Column(
         horizontalAlignment = Alignment.End,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         ElevatedSuggestionChip(
             icon = {
                 Icon(
                     imageVector = Icons.Rounded.Add,
-                    contentDescription = "Add Link"
+                    contentDescription = "Add Link",
                 )
             },
             onClick = { openBottomSheet = !openBottomSheet },
             label = { Text("Add Link") },
-            colors = SuggestionChipDefaults.elevatedSuggestionChipColors(containerColor = LightBrown)
+            colors = SuggestionChipDefaults.elevatedSuggestionChipColors(containerColor = LightBrown),
         )
     }
 
     // Sheet content
     if (openBottomSheet) {
         ModalBottomSheet(
-            onDismissRequest = { 
+            onDismissRequest = {
                 openBottomSheet = false
                 errorMessage = null
                 viewModel.resetState()
             },
-            sheetState = bottomSheetState
+            sheetState = bottomSheetState,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 // Cancel button
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
+                    horizontalArrangement = Arrangement.Center,
                 ) {
                     TextButton(
                         onClick = {
-                            scope.launch { 
+                            scope.launch {
                                 bottomSheetState.hide()
                                 openBottomSheet = false
                                 errorMessage = null
                                 viewModel.resetState()
                             }
-                        }
+                        },
                     ) {
                         Text(
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             color = DarkOrange,
-                            text = "Cancel"
+                            text = "Cancel",
                         )
                     }
                 }
@@ -355,7 +354,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                     Text(
                         text = errorMessage!!,
                         color = androidx.compose.ui.graphics.Color.Red,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                        modifier = Modifier.padding(vertical = 8.dp),
                     )
                 }
 
@@ -366,7 +365,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                     label = { Text("URL") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = TextFieldDefaults.colors()
+                    colors = TextFieldDefaults.colors(),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -378,7 +377,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                     label = { Text("Name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    colors = TextFieldDefaults.colors()
+                    colors = TextFieldDefaults.colors(),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -387,12 +386,12 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 Button(
                     onClick = { viewModel.addLink(name, url) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = uiState !is AddLinkUiState.Loading
+                    enabled = uiState !is AddLinkUiState.Loading,
                 ) {
                     if (uiState is AddLinkUiState.Loading) {
                         androidx.compose.material3.CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
-                            color = androidx.compose.ui.graphics.Color.White
+                            color = androidx.compose.ui.graphics.Color.White,
                         )
                     } else {
                         Text(stringResource(R.string.submit))

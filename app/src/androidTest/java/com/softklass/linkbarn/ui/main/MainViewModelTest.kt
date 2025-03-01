@@ -3,19 +3,20 @@ package com.softklass.linkbarn.ui.main
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.LinkDataRepository
+import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.whenever
-import java.net.URI
-import org.junit.Assert.*
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)

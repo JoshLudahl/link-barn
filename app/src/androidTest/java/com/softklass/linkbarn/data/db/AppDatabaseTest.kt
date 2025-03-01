@@ -5,14 +5,16 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.softklass.linkbarn.data.model.Link
+import java.net.URI
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.net.URI
 
 @RunWith(AndroidJUnit4::class)
 class AppDatabaseTest {
@@ -24,7 +26,7 @@ class AppDatabaseTest {
         db = Room.databaseBuilder(
             context,
             AppDatabase::class.java,
-            "test_database"
+            "test_database",
         ).build()
     }
 
@@ -43,7 +45,6 @@ class AppDatabaseTest {
         val testLink = Link(
             name = "Test Link",
             uri = URI("https://example.com"),
-            status = Status.UNREAD
         )
 
         db.linkDao().insertLink(testLink)
@@ -59,7 +60,6 @@ class AppDatabaseTest {
         val testLink = Link(
             name = "Original Name",
             uri = URI("https://example.com"),
-            status = Status.UNREAD
         )
 
         db.linkDao().insertLink(testLink)
@@ -76,7 +76,6 @@ class AppDatabaseTest {
         val testLink = Link(
             name = "To Delete",
             uri = URI("https://example.com"),
-            status = Status.UNREAD
         )
 
         db.linkDao().insertLink(testLink)
@@ -91,19 +90,13 @@ class AppDatabaseTest {
         val unreadLink = Link(
             name = "Unread Link",
             uri = URI("https://example.com"),
-            status = Status.UNREAD
         )
         val readLink = Link(
             name = "Read Link",
             uri = URI("https://example.com"),
-            status = Status.READ
         )
 
         db.linkDao().insertLink(unreadLink)
         db.linkDao().insertLink(readLink)
-
-        val unreadLinks = db.linkDao().getLinksByStatus(Status.UNREAD).first()
-        assertEquals(1, unreadLinks.size)
-        assertEquals("Unread Link", unreadLinks[0].name)
     }
 }

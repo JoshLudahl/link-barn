@@ -1,17 +1,16 @@
 package com.softklass.linkbarn.ui.main
 
+import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
-import com.softklass.linkbarn.data.model.Link
+import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.mockito.kotlin.verify
-import java.net.URI
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.verify
 
 @ExperimentalCoroutinesApi
 class MainViewModelTest {
@@ -59,7 +58,7 @@ class MainViewModelTest {
         val testLink = Link(
             id = "test-id",
             name = "Test Link",
-            uri = URI("https://example.com")
+            uri = URI("https://example.com"),
         )
 
         // When

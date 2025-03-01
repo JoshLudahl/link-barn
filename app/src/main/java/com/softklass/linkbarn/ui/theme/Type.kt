@@ -9,8 +9,9 @@ import androidx.compose.ui.unit.sp
 import com.softklass.linkbarn.R
 
 val fontFamily = FontFamily(
-    Font(resId = R.font.inter)
+    Font(resId = R.font.inter),
 )
+
 // Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
@@ -18,8 +19,8 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
+        letterSpacing = 0.5.sp,
+    ),
     /* Other default text styles to override
     titleLarge = TextStyle(
         fontFamily = FontFamily.Default,

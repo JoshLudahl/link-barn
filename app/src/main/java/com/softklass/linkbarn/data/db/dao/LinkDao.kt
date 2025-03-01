@@ -7,8 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.softklass.linkbarn.data.model.Link
-import kotlinx.coroutines.flow.Flow
 import java.net.URI
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface LinkDao {
