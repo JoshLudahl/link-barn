@@ -18,16 +18,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.DismissDirection
-import androidx.compose.material.DismissValue
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.rememberDismissState
+import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ElevatedSuggestionChip
@@ -159,13 +157,13 @@ fun MainScreen(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     val context = LocalContext.current
-    val dismissState = rememberDismissState(
-        confirmStateChange = { dismissValue ->
-            if (dismissValue == DismissValue.DismissedToStart) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { dismissValue ->
+            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
                 viewModel.deleteLink(link)
                 true
             } else {
@@ -174,10 +172,11 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
         }
     )
 
-    SwipeToDismiss(
+    SwipeToDismissBox(
         state = dismissState,
-        directions = setOf(DismissDirection.EndToStart),
-        background = {
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true,
+        backgroundContent = {
             val color = Color.White.copy(alpha = 0.8f)
             Row(
                 modifier = Modifier
@@ -194,7 +193,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                 )
             }
         },
-        dismissContent = {
+        content = {
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()

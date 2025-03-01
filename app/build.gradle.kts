@@ -6,6 +6,16 @@ plugins {
     id("kotlin-parcelize")
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.ktlint)
+}
+
+ktlint {
+    android.set(true)
+    verbose.set(true)
+    outputToConsole.set(true)
+    filter {
+        exclude { element -> element.file.path.contains("generated/") }
+    }
 }
 
 android {
