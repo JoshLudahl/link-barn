@@ -15,9 +15,7 @@ fun Navigation() {
 }
 
 @Composable
-fun AppNavHost(
-    navController: NavHostController,
-) {
+fun AppNavHost(navController: NavHostController) {
     NavHost(navController = navController, startDestination = Screen.Home.route) {
         composable(route = Screen.Home.route) {
             MainScreen(navController)

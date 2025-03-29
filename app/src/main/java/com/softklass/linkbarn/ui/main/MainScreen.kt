@@ -1,7 +1,6 @@
 package com.softklass.linkbarn.ui.main
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,8 +18,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
@@ -56,6 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.softklass.linkbarn.R
@@ -68,10 +68,7 @@ import com.softklass.linkbarn.ui.theme.LightOrange
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainScreen(
-    navController: NavController,
-    viewModel: MainViewModel = hiltViewModel(),
-) {
+fun MainScreen(navController: NavController, viewModel: MainViewModel = hiltViewModel()) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -241,12 +238,12 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                 },
                         )
                         Icon(
-                            imageVector = Icons.Filled.ExitToApp,
+                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                             contentDescription = "Open in browser",
                             modifier = Modifier
                                 .size(24.dp)
                                 .clickable {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(link.uri.toString()))
+                                    val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().toUri())
                                     context.startActivity(intent)
                                 },
                         )
@@ -353,7 +350,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 if (errorMessage != null) {
                     Text(
                         text = errorMessage!!,
-                        color = androidx.compose.ui.graphics.Color.Red,
+                        color = Color.Red,
                         modifier = Modifier.padding(vertical = 8.dp),
                     )
                 }
@@ -391,7 +388,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                     if (uiState is AddLinkUiState.Loading) {
                         androidx.compose.material3.CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
-                            color = androidx.compose.ui.graphics.Color.White,
+                            color = Color.White,
                         )
                     } else {
                         Text(stringResource(R.string.submit))
