@@ -20,7 +20,7 @@ ktlint {
 
 android {
     namespace = "com.softklass.linkbarn"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         javaCompileOptions {
@@ -34,7 +34,7 @@ android {
         applicationId = "com.softklass.linkbarn"
         minSdk = 26
 
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -72,9 +72,7 @@ android {
         compose = true
         buildConfig = true
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
