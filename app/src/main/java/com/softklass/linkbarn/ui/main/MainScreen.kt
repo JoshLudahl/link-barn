@@ -27,6 +27,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ElevatedSuggestionChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SuggestionChipDefaults
@@ -57,18 +58,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Link
-import com.softklass.linkbarn.ui.theme.Dark
-import com.softklass.linkbarn.ui.theme.DarkOrange
-import com.softklass.linkbarn.ui.theme.Light
-import com.softklass.linkbarn.ui.theme.LightBrown
-import com.softklass.linkbarn.ui.theme.LightOrange
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainScreen(navController: NavController, viewModel: MainViewModel = hiltViewModel()) {
+fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier
@@ -91,7 +86,7 @@ fun MainScreen(navController: NavController, viewModel: MainViewModel = hiltView
                     .fillMaxWidth()
                     .fillMaxHeight()
                     .weight(1f)
-                    .background(color = Dark),
+                    .background(color = MaterialTheme.colorScheme.primaryContainer),
                 verticalArrangement = Arrangement.Center,
             ) {
                 Row(
@@ -111,7 +106,7 @@ fun MainScreen(navController: NavController, viewModel: MainViewModel = hiltView
         Row {
             Column(
                 modifier = Modifier
-                    .background(color = LightOrange)
+                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
                     .fillMaxWidth(),
             ) {
                 Text(text = "Category Section")
@@ -121,7 +116,7 @@ fun MainScreen(navController: NavController, viewModel: MainViewModel = hiltView
         Row {
             Column(
                 modifier = Modifier
-                    .background(color = Light)
+
                     .fillMaxWidth(),
             ) {
                 val links by viewModel.links.collectAsState()
@@ -185,7 +180,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = "Delete",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.error,
                 )
             }
         },
@@ -193,12 +188,14 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .background(color = MaterialTheme.colorScheme.primaryContainer),
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .background(color = MaterialTheme.colorScheme.onPrimary),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -302,7 +299,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
             },
             onClick = { openBottomSheet = !openBottomSheet },
             label = { Text("Add Link") },
-            colors = SuggestionChipDefaults.elevatedSuggestionChipColors(containerColor = LightBrown),
+            colors = SuggestionChipDefaults.elevatedSuggestionChipColors(containerColor = MaterialTheme.colorScheme.secondary),
         )
     }
 
@@ -340,7 +337,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                         Text(
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
-                            color = DarkOrange,
+                            color = MaterialTheme.colorScheme.primary,
                             text = "Cancel",
                         )
                     }

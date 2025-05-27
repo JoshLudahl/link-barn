@@ -1,4 +1,6 @@
 [versions]
+kotlinxCoroutinesCore = "1.7.1"
+kotlinxCoroutinesTest = "1.7.1"
 ktlint = "12.1.2"
 activityCompose = "1.10.1"
 desugar_jdk_libs = "2.1.5"
@@ -6,23 +8,24 @@ roomVersion = "2.7.1"
 androidxTestCore = "1.6.1"
 gsonVersion = "2.11.0"
 kspVersion = "2.1.20-1.0.32"
-hiltVersion = "2.55"
+hiltVersion = "2.56.2"
 hiltNavigationCompose = "1.2.0"
 mockitoCore = "5.15.2"
 mockitoKotlin = "4.1.0"
 mockitoAndroid = "5.15.2"
 coroutinesTest = "1.10.1"
 androidApplication = "8.10.0"
-androidKotlin = "2.1.20"
-appsearchVersion = "1.1.0-beta01"
-composeBom = "2025.05.00"
+androidKotlin = "2.1.21"
+appsearchVersion = "1.1.0-rc01"
+composeBom = "2025.05.01"
 coreKtx = "1.16.0"
-datastorePreferences = "1.1.6"
+datastorePreferences = "1.1.7"
 espressoCore = "3.6.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 lifecycleRuntimeKtx = "2.9.0"
 navigationCompose = "2.9.0"
+uiTextGoogleFonts = "1.8.2"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -53,6 +56,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltVersion" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltVersion" }
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
 mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
@@ -63,6 +67,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVers
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomVersion" }
 androidx-room-common = { module = "androidx.room:room-common", version.ref = "roomVersion" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
+androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 
 [plugins]
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
