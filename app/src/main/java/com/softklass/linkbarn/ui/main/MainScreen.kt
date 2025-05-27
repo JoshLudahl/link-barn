@@ -17,20 +17,22 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ElevatedSuggestionChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -63,8 +65,10 @@ import com.softklass.linkbarn.data.model.Link
 import kotlinx.coroutines.launch
 
 @Composable
-fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+fun MainScreen(viewModel: MainViewModel) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -79,14 +83,13 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
                     fontSize = 22.sp,
                     text = stringResource(id = R.string.main_screen_title),
                 )
-                Text(text = "Header Sub title")
+                Text(text = "Your saved links.")
             }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .fillMaxHeight()
-                    .weight(1f)
-                    .background(color = MaterialTheme.colorScheme.primaryContainer),
+                    .weight(1f),
                 verticalArrangement = Arrangement.Center,
             ) {
                 Row(
@@ -106,17 +109,20 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
         Row {
             Column(
                 modifier = Modifier
-                    .background(color = MaterialTheme.colorScheme.secondaryContainer)
+                    .background(
+                        shape = RoundedCornerShape(15),
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                    )
+                    .padding(16.dp)
                     .fillMaxWidth(),
             ) {
-                Text(text = "Category Section")
+                Text(text = "Links", color = MaterialTheme.colorScheme.primary)
             }
         }
 
         Row {
             Column(
                 modifier = Modifier
-
                     .fillMaxWidth(),
             ) {
                 val links by viewModel.links.collectAsState()
@@ -148,11 +154,11 @@ fun MainScreen(viewModel: MainViewModel = hiltViewModel()) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val dismissState = rememberSwipeToDismissBoxState(
+        positionalThreshold = { distance -> distance * 0.5f },
         confirmValueChange = { dismissValue ->
             if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
                 viewModel.deleteLink(link)
@@ -168,11 +174,9 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
         enableDismissFromStartToEnd = false,
         enableDismissFromEndToStart = true,
         backgroundContent = {
-            val color = Color.White.copy(alpha = 0.8f)
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color)
                     .padding(12.dp, 8.dp),
                 horizontalArrangement = Arrangement.End,
                 verticalAlignment = Alignment.CenterVertically,
@@ -188,14 +192,15 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .background(color = MaterialTheme.colorScheme.primaryContainer),
+                    .padding(horizontal = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                ),
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                        .background(color = MaterialTheme.colorScheme.onPrimary),
+                        .padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -240,7 +245,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             modifier = Modifier
                                 .size(24.dp)
                                 .clickable {
-                                    val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().toUri())
+                                    val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
                                     context.startActivity(intent)
                                 },
                         )
@@ -250,6 +255,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
         },
     )
 }
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -269,6 +275,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
             is AddLinkUiState.Error -> {
                 errorMessage = (uiState as AddLinkUiState.Error).message
             }
+
             is AddLinkUiState.Success -> {
                 errorMessage = null
                 url = ""
@@ -279,6 +286,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 }
                 viewModel.resetState()
             }
+
             else -> {
                 errorMessage = null
             }
@@ -290,17 +298,22 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
         horizontalAlignment = Alignment.End,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        ElevatedSuggestionChip(
-            icon = {
-                Icon(
-                    imageVector = Icons.Rounded.Add,
-                    contentDescription = "Add Link",
-                )
-            },
+        Button(
             onClick = { openBottomSheet = !openBottomSheet },
-            label = { Text("Add Link") },
-            colors = SuggestionChipDefaults.elevatedSuggestionChipColors(containerColor = MaterialTheme.colorScheme.secondary),
-        )
+            //shape = RoundedCornerShape(15.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Add,
+                contentDescription = "Add Link",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+            Text(
+                text = "Add Link",
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
     }
 
     // Sheet content
@@ -311,7 +324,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 errorMessage = null
                 viewModel.resetState()
             },
-            sheetState = bottomSheetState,
+            sheetState = bottomSheetState
         ) {
             Column(
                 modifier = Modifier
@@ -383,7 +396,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                     enabled = uiState !is AddLinkUiState.Loading,
                 ) {
                     if (uiState is AddLinkUiState.Loading) {
-                        androidx.compose.material3.CircularProgressIndicator(
+                        CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = Color.White,
                         )
