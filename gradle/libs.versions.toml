@@ -1,6 +1,5 @@
 [versions]
 kotlinxCoroutinesCore = "1.7.1"
-kotlinxCoroutinesTest = "1.7.1"
 ktlint = "12.1.2"
 activityCompose = "1.10.1"
 desugar_jdk_libs = "2.1.5"
@@ -14,7 +13,7 @@ mockitoCore = "5.15.2"
 mockitoKotlin = "4.1.0"
 mockitoAndroid = "5.15.2"
 coroutinesTest = "1.10.1"
-androidApplication = "8.10.0"
+androidApplication = "8.10.1"
 androidKotlin = "2.1.21"
 appsearchVersion = "1.1.0-rc01"
 composeBom = "2025.05.01"
@@ -41,7 +40,6 @@ androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-mani
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-compose-material = { module = "androidx.compose.material:material" }
-androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
