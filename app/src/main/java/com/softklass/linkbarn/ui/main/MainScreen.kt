@@ -1,7 +1,6 @@
 package com.softklass.linkbarn.ui.main
 
 import android.content.Intent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,6 +32,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -66,86 +66,81 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)) {
-        Row(
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) { padding ->
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(intrinsicSize = IntrinsicSize.Max),
-            verticalAlignment = Alignment.CenterVertically,
+                .padding(16.dp)
+                .padding(padding)
         ) {
-            Column(
-                modifier = Modifier
-                    .weight(2f),
-            ) {
-                Text(
-                    fontSize = 22.sp,
-                    text = stringResource(id = R.string.main_screen_title),
-                )
-                Text(text = "Your saved links.")
-            }
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight()
-                    .weight(1f),
-                verticalArrangement = Arrangement.Center,
+                    .height(intrinsicSize = IntrinsicSize.Max),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
-                Row(
-                    modifier = Modifier.fillMaxHeight(),
-                    verticalAlignment = Alignment.CenterVertically,
+                Column(
+                    modifier = Modifier
+                        .weight(2f),
                 ) {
-                    ModalBottomSheetAddUrl()
-                }
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-        }
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(16.dp),
-        )
-        Row {
-            Column(
-                modifier = Modifier
-                    .background(
-                        shape = RoundedCornerShape(15),
-                        color = MaterialTheme.colorScheme.secondaryContainer,
+                    Text(
+                        fontSize = 22.sp,
+                        text = stringResource(id = R.string.main_screen_title),
                     )
-                    .padding(16.dp)
-                    .fillMaxWidth(),
-            ) {
-                Text(text = "Links", color = MaterialTheme.colorScheme.primary)
-            }
-        }
-
-        Row {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth(),
-            ) {
-                val links by viewModel.links.collectAsState()
-                LazyColumn(
+                    Text(text = "Your saved links.")
+                }
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                        .fillMaxHeight()
+                        .weight(1f),
+                    verticalArrangement = Arrangement.Center,
                 ) {
-                    if (links.isEmpty()) {
-                        item {
-                            Text(
-                                text = "No links added yet",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                textAlign = TextAlign.Center,
-                                color = Color.Gray,
-                            )
-                        }
-                    } else {
-                        items(links) { link ->
-                            LinkItem(link = link, viewModel = viewModel)
+                    Row(
+                        modifier = Modifier.fillMaxHeight(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        ModalBottomSheetAddUrl()
+                    }
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+            }
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(16.dp),
+            )
+
+
+            Row {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                ) {
+                    val links by viewModel.links.collectAsState()
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        if (links.isEmpty()) {
+                            item {
+                                Text(
+                                    text = "No links added yet",
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Gray,
+                                )
+                            }
+                        } else {
+                            items(links) { link ->
+                                LinkItem(link = link, viewModel = viewModel)
+                            }
                         }
                     }
                 }
@@ -217,7 +212,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = link.uri.toString(),
-                            fontSize = 14.sp,
+                            fontSize = 10.sp,
                             color = Color.Gray,
                         )
                     }
@@ -300,17 +295,18 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
     ) {
         Button(
             onClick = { openBottomSheet = !openBottomSheet },
-            //shape = RoundedCornerShape(15.dp),
+            shape = RoundedCornerShape(15.dp),
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
         ) {
             Icon(
                 imageVector = Icons.Rounded.Add,
                 contentDescription = "Add Link",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(end = 8.dp)
+                modifier = Modifier.padding(end = 2.dp)
             )
             Text(
                 text = "Add Link",
+                fontSize = 10.sp,
                 color = MaterialTheme.colorScheme.primary,
             )
         }

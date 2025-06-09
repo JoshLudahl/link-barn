@@ -31,7 +31,6 @@ fun AppNavHost(
         modifier = Modifier,
     ) {
         val animationTween = 350
-
         composable<Navigation.Main>(
             exitTransition = {
                 slideOutOfContainer(
@@ -47,7 +46,6 @@ fun AppNavHost(
                             animationSpec = tween(animationTween),
                         )
                     }
-
                     else -> {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Right,
@@ -55,14 +53,11 @@ fun AppNavHost(
                         )
                     }
                 }
-
             },
-
-            ) {
+        ) {
             MainScreen(
                 viewModel = hiltViewModel<MainViewModel>(),
-
-                )
+            )
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.softklass.linkbarn.di
 
 import android.content.Context
+import androidx.room.Room
 import com.softklass.linkbarn.data.db.AppDatabase
 import com.softklass.linkbarn.data.db.dao.LinkDao
 import dagger.Module
@@ -20,11 +21,11 @@ object AppModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
-        return androidx.room.Room.databaseBuilder(
-            context.applicationContext,
-            AppDatabase::class.java,
-            DATABASE_NAME,
-        ).fallbackToDestructiveMigration() // During development, we'll allow destructive migrations
+        return Room.databaseBuilder(
+                context.applicationContext,
+                AppDatabase::class.java,
+                DATABASE_NAME,
+            ).fallbackToDestructiveMigration(false) // During development, we'll allow destructive migrations
             .build()
     }
 
