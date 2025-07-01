@@ -22,8 +22,7 @@ private sealed interface Navigation {
 }
 
 @Composable
-fun AppNavHost(
-) {
+fun AppNavHost() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
@@ -46,6 +45,7 @@ fun AppNavHost(
                             animationSpec = tween(animationTween),
                         )
                     }
+
                     else -> {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Right,

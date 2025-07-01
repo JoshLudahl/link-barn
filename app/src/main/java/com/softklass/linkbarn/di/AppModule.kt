@@ -9,9 +9,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -22,10 +22,10 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
-                context.applicationContext,
-                AppDatabase::class.java,
-                DATABASE_NAME,
-            ).fallbackToDestructiveMigration(false) // During development, we'll allow destructive migrations
+            context.applicationContext,
+            AppDatabase::class.java,
+            DATABASE_NAME,
+        ).fallbackToDestructiveMigration(false) // During development, we'll allow destructive migrations
             .build()
     }
 

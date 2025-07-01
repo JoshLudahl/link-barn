@@ -67,13 +67,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun MainScreen(viewModel: MainViewModel) {
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
-                .padding(padding)
+                .padding(padding),
         ) {
             Row(
                 modifier = Modifier
@@ -112,7 +112,6 @@ fun MainScreen(viewModel: MainViewModel) {
                     .fillMaxWidth()
                     .height(16.dp),
             )
-
 
             Row {
                 Column(
@@ -251,7 +250,6 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     )
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
@@ -302,7 +300,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 imageVector = Icons.Rounded.Add,
                 contentDescription = "Add Link",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(end = 2.dp)
+                modifier = Modifier.padding(end = 2.dp),
             )
             Text(
                 text = "Add Link",
@@ -320,7 +318,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 errorMessage = null
                 viewModel.resetState()
             },
-            sheetState = bottomSheetState
+            sheetState = bottomSheetState,
         ) {
             Column(
                 modifier = Modifier
