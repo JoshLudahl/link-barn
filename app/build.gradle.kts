@@ -2,8 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.android.kotlin)
     alias(libs.plugins.compose.compiler)
-    kotlin("kapt")
-    id("kotlin-parcelize")
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktlint)
@@ -61,14 +59,13 @@ android {
             resValue(type = "string", name = "app_name", value = "Link Barn debug")
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         isCoreLibraryDesugaringEnabled = true
     }
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -79,6 +76,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+kotlin {
+    jvmToolchain(21)
 }
 
 dependencies {
@@ -120,13 +121,13 @@ dependencies {
     implementation(libs.androidx.datastore.preferences.core)
 
     implementation(libs.androidx.appsearch)
-    kapt(libs.androidx.appsearch.compiler)
+    ksp(libs.androidx.appsearch.compiler)
     implementation(libs.androidx.appsearch.local.storage)
     implementation(libs.androidx.appsearch.platform.storage)
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
 
     // Room
