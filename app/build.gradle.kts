@@ -120,11 +120,6 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.datastore.preferences.core)
 
-    implementation(libs.androidx.appsearch)
-    ksp(libs.androidx.appsearch.compiler)
-    implementation(libs.androidx.appsearch.local.storage)
-    implementation(libs.androidx.appsearch.platform.storage)
-
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)

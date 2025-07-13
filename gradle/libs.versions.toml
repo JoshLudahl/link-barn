@@ -1,6 +1,6 @@
 [versions]
 kotlinxCoroutinesCore = "1.10.2"
-ktlint = "12.3.0"
+ktlint = "13.0.0"
 activityCompose = "1.10.1"
 desugar_jdk_libs = "2.1.5"
 roomVersion = "2.7.2"
@@ -15,7 +15,6 @@ mockitoAndroid = "5.18.0"
 coroutinesTest = "1.10.2"
 androidApplication = "8.11.1"
 androidKotlin = "2.2.0"
-appsearchVersion = "1.1.0-rc01"
 composeBom = "2025.06.01"
 coreKtx = "1.16.0"
 datastorePreferences = "1.1.7"
@@ -23,15 +22,11 @@ espressoCore = "3.6.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
 lifecycleRuntimeKtx = "2.9.1"
-navigationCompose = "2.9.0"
+navigationCompose = "2.9.1"
 uiTextGoogleFonts = "1.8.3"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
-androidx-appsearch = { module = "androidx.appsearch:appsearch", version.ref = "appsearchVersion" }
-androidx-appsearch-compiler = { module = "androidx.appsearch:appsearch-compiler", version.ref = "appsearchVersion" }
-androidx-appsearch-local-storage = { module = "androidx.appsearch:appsearch-local-storage", version.ref = "appsearchVersion" }
-androidx-appsearch-platform-storage = { module = "androidx.appsearch:appsearch-platform-storage", version.ref = "appsearchVersion" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics"}
