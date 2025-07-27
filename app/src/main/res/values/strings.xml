@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Link Barn</string>
-    <string name="main_screen_title">Welcome</string>
+    <string name="main_screen_title">Welcome to the Link Barn</string>
     <string name="submit">Submit</string>
 </resources>
