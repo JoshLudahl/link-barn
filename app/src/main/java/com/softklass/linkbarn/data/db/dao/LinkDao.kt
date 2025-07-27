@@ -15,6 +15,12 @@ interface LinkDao {
     @Query("SELECT * FROM links")
     fun getAllLinks(): Flow<List<Link>>
 
+    @Query("SELECT * FROM links WHERE visited = 1")
+    fun getVisitedLinks(): Flow<List<Link>>
+
+    @Query("SELECT * FROM links WHERE visited = 0")
+    fun getUnvisitedLinks(): Flow<List<Link>>
+
     @Query("SELECT * FROM links WHERE id = :id")
     fun getLinkById(id: String): Flow<Link?>
 

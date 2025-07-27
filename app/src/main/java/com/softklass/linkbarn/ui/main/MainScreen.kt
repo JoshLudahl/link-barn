@@ -37,6 +37,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -150,6 +153,45 @@ fun MainScreen(
                     .height(16.dp),
             )
 
+            // Filter segmented button
+            val currentFilter by viewModel.currentFilter.collectAsState()
+            val allLinks by viewModel.allLinks.collectAsState()
+
+            // Only show segmented buttons if there are any links
+            if (allLinks.isNotEmpty()) {
+                SingleChoiceSegmentedButtonRow(
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    SegmentedButton(
+                        selected = currentFilter == LinkFilter.ALL,
+                        onClick = { viewModel.setFilter(LinkFilter.ALL) },
+                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 3),
+                    ) {
+                        Text("All")
+                    }
+                    SegmentedButton(
+                        selected = currentFilter == LinkFilter.UNVISITED,
+                        onClick = { viewModel.setFilter(LinkFilter.UNVISITED) },
+                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3),
+                    ) {
+                        Text("Unviewed")
+                    }
+                    SegmentedButton(
+                        selected = currentFilter == LinkFilter.VISITED,
+                        onClick = { viewModel.setFilter(LinkFilter.VISITED) },
+                        shape = SegmentedButtonDefaults.itemShape(index = 2, count = 3),
+                    ) {
+                        Text("Viewed")
+                    }
+                }
+            }
+
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(8.dp),
+            )
+
             Row {
                 Column(
                     modifier = Modifier
@@ -170,41 +212,52 @@ fun MainScreen(
                                         .padding(16.dp),
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                 ) {
+                                    // Customize empty state text based on current filter
+                                    val emptyStateText = when (currentFilter) {
+                                        LinkFilter.VISITED -> "No viewed links"
+                                        LinkFilter.UNVISITED -> "No unviewed links"
+                                        LinkFilter.ALL -> "No links added yet"
+                                    }
+
                                     Text(
-                                        text = "No links added yet",
+                                        text = emptyStateText,
                                         modifier = Modifier
                                             .fillMaxWidth(),
                                         textAlign = TextAlign.Center,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     )
-                                    Spacer(modifier = Modifier.height(24.dp))
-                                    Icon(
-                                        modifier = Modifier
-                                            .size(200.dp)
-                                            .padding(16.dp),
-                                        painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_empty_state),
-                                        contentDescription = "No links",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                    )
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Button(
-                                        onClick = { openBottomSheet = true },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = MaterialTheme.colorScheme.primary,
-                                        ),
-                                        modifier = Modifier.padding(horizontal = 16.dp),
-                                    ) {
+
+                                    // Only show the full empty state UI for the ALL filter
+                                    if (currentFilter == LinkFilter.ALL) {
+                                        Spacer(modifier = Modifier.height(24.dp))
                                         Icon(
-                                            imageVector = Icons.Rounded.Add,
-                                            contentDescription = "Add Link",
-                                            tint = MaterialTheme.colorScheme.onPrimary,
-                                            modifier = Modifier.size(20.dp),
+                                            modifier = Modifier
+                                                .size(200.dp)
+                                                .padding(16.dp),
+                                            painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_empty_state),
+                                            contentDescription = "No links",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                         )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = "Add Link",
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                        )
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        Button(
+                                            onClick = { openBottomSheet = true },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = MaterialTheme.colorScheme.primary,
+                                            ),
+                                            modifier = Modifier.padding(horizontal = 16.dp),
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Add,
+                                                contentDescription = "Add Link",
+                                                tint = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier.size(20.dp),
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Add Link",
+                                                color = MaterialTheme.colorScheme.onPrimary,
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -302,6 +355,21 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = if (link.visited) "Viewed" else "Unviewed",
+                                fontSize = 10.sp,
+                                color = if (link.visited) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.tertiary
+                                },
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
                     }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -327,6 +395,9 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             modifier = Modifier
                                 .size(24.dp)
                                 .clickable {
+                                    // Mark the link as visited
+                                    viewModel.markLinkAsVisited(link)
+                                    // Open the link in browser
                                     val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
                                     context.startActivity(intent)
                                 },

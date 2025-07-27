@@ -11,13 +11,18 @@ class LinkDataRepository @Inject constructor(
 ) {
     fun getAllLinks(): Flow<List<Link>> = linkDao.getAllLinks()
 
-    fun getLinkById(id: String): Flow<Link?> = linkDao.getLinkById(id)
+    fun getVisitedLinks(): Flow<List<Link>> = linkDao.getVisitedLinks()
+
+    fun getUnvisitedLinks(): Flow<List<Link>> = linkDao.getUnvisitedLinks()
 
     suspend fun getLinkByUri(uri: URI): Link? = linkDao.getLinkByUri(uri)
 
     suspend fun insertLink(link: Link) = linkDao.insertLink(link)
 
-    suspend fun updateLink(link: Link) = linkDao.updateLink(link)
+    suspend fun markLinkAsVisited(link: Link) {
+        val updatedLink = link.copy(visited = true)
+        linkDao.updateLink(updatedLink)
+    }
 
     suspend fun deleteLink(id: String) = linkDao.deleteLinkById(id)
 }

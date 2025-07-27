@@ -10,11 +10,19 @@ import java.net.URI
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+enum class LinkFilter {
+    ALL,
+    VISITED,
+    UNVISITED,
+}
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -25,7 +33,24 @@ class MainViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<AddLinkUiState>(AddLinkUiState.Initial)
     val uiState: StateFlow<AddLinkUiState> = _uiState
 
-    val links: StateFlow<List<Link>> = linkRepository.getAllLinks().stateIn(
+    private val _currentFilter = MutableStateFlow(LinkFilter.ALL)
+    val currentFilter: StateFlow<LinkFilter> = _currentFilter
+
+    // Track all links separately to determine if we should show segmented buttons
+    val allLinks: StateFlow<List<Link>> = linkRepository.getAllLinks().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList(),
+    )
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val links: StateFlow<List<Link>> = _currentFilter.flatMapLatest { filter ->
+        when (filter) {
+            LinkFilter.ALL -> linkRepository.getAllLinks()
+            LinkFilter.VISITED -> linkRepository.getVisitedLinks()
+            LinkFilter.UNVISITED -> linkRepository.getUnvisitedLinks()
+        }
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
@@ -83,6 +108,20 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             try {
                 linkRepository.deleteLink(link.id)
+            } catch (e: Exception) {
+                // Handle error if needed
+            }
+        }
+    }
+
+    fun setFilter(filter: LinkFilter) {
+        _currentFilter.value = filter
+    }
+
+    fun markLinkAsVisited(link: Link) {
+        viewModelScope.launch(dispatcher) {
+            try {
+                linkRepository.markLinkAsVisited(link)
             } catch (e: Exception) {
                 // Handle error if needed
             }
