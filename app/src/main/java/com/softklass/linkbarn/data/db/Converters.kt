@@ -7,22 +7,14 @@ import java.time.Instant
 class Converters {
 
     @TypeConverter
-    fun fromTimestamp(value: Long?): Instant? {
-        return value?.let { Instant.ofEpochMilli(it) }
-    }
+    fun fromTimestamp(value: Long?): Instant? = value?.let { Instant.ofEpochMilli(it) }
 
     @TypeConverter
-    fun instantToTimestamp(instant: Instant?): Long? {
-        return instant?.toEpochMilli()
-    }
+    fun instantToTimestamp(instant: Instant?): Long? = instant?.toEpochMilli()
 
     @TypeConverter
-    fun fromUriString(value: String?): URI? {
-        return value?.let { URI.create(it) }
-    }
+    fun fromUriString(value: String?): URI? = value?.let { URI.create(it) }
 
     @TypeConverter
-    fun uriToString(uri: URI?): String? {
-        return uri?.toString()
-    }
+    fun uriToString(uri: URI?): String? = uri?.toString()
 }

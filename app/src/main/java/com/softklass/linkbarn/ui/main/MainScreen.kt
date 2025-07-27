@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,15 +20,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -51,7 +55,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -64,10 +67,57 @@ import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Link
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(viewModel: MainViewModel) {
+fun MainScreen(
+    viewModel: MainViewModel,
+    onNavigateToSettings: () -> Unit = {},
+) {
+    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+
+    // Add the bottom sheet
+    ModalBottomSheetAddUrl(
+        openBottomSheet = openBottomSheet,
+        onOpenBottomSheetChange = { openBottomSheet = it },
+    )
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            BottomAppBar(
+                // modifier = Modifier.height(56.dp),
+                containerColor = MaterialTheme.colorScheme.surface,
+                windowInsets =
+                WindowInsets(
+                    left = 8.dp,
+                    top = 0.dp,
+                    right = 0.dp,
+                    bottom = 16.dp,
+                ),
+                actions = {
+                    IconButton(onClick = { onNavigateToSettings() }) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings",
+                            modifier = Modifier.size(24.dp),
+                        )
+                    }
+                },
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = { openBottomSheet = true },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(16.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = "Add Link",
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    }
+                },
+            )
+        },
     ) { padding ->
         Column(
             modifier = Modifier
@@ -91,20 +141,7 @@ fun MainScreen(viewModel: MainViewModel) {
                     )
                     Text(text = "Your saved links.")
                 }
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .weight(1f),
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxHeight(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        ModalBottomSheetAddUrl()
-                    }
-                }
+
                 Spacer(modifier = Modifier.width(16.dp))
             }
             Spacer(
@@ -127,17 +164,55 @@ fun MainScreen(viewModel: MainViewModel) {
                     ) {
                         if (links.isEmpty()) {
                             item {
-                                Text(
-                                    text = "No links added yet",
+                                Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
-                                    textAlign = TextAlign.Center,
-                                    color = Color.Gray,
-                                )
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                ) {
+                                    Text(
+                                        text = "No links added yet",
+                                        modifier = Modifier
+                                            .fillMaxWidth(),
+                                        textAlign = TextAlign.Center,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                    Spacer(modifier = Modifier.height(24.dp))
+                                    Icon(
+                                        modifier = Modifier
+                                            .size(200.dp)
+                                            .padding(16.dp),
+                                        painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_empty_state),
+                                        contentDescription = "No links",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                                    )
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    Button(
+                                        onClick = { openBottomSheet = true },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                        ),
+                                        modifier = Modifier.padding(horizontal = 16.dp),
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Add,
+                                            contentDescription = "Add Link",
+                                            tint = MaterialTheme.colorScheme.onPrimary,
+                                            modifier = Modifier.size(20.dp),
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = "Add Link",
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                        )
+                                    }
+                                }
                             }
                         } else {
-                            items(links) { link ->
+                            items(
+                                items = links,
+                                key = { link -> link.id },
+                            ) { link ->
                                 LinkItem(link = link, viewModel = viewModel)
                             }
                         }
@@ -151,6 +226,8 @@ fun MainScreen(viewModel: MainViewModel) {
 @Composable
 fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     val context = LocalContext.current
+    rememberCoroutineScope()
+
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { distance -> distance * 0.5f },
         confirmValueChange = { dismissValue ->
@@ -162,6 +239,16 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
             }
         },
     )
+
+    // Reset the dismiss state after a short delay when the current value is not Settled
+    // Include link.id as a key to ensure this effect is properly associated with each item
+    LaunchedEffect(dismissState.currentValue, link.id) {
+        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+            // Wait for the animation to complete
+            kotlinx.coroutines.delay(300)
+            dismissState.reset()
+        }
+    }
 
     SwipeToDismissBox(
         state = dismissState,
@@ -188,7 +275,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.secondary,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),
             ) {
                 Row(
@@ -207,12 +294,13 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             text = link.name ?: "Untitled",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = link.uri.toString(),
-                            fontSize = 10.sp,
-                            color = Color.Gray,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                     Row(
@@ -252,8 +340,11 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
-    var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+fun ModalBottomSheetAddUrl(
+    viewModel: MainViewModel = hiltViewModel(),
+    openBottomSheet: Boolean = false,
+    onOpenBottomSheetChange: (Boolean) -> Unit = {},
+) {
     var url by rememberSaveable { mutableStateOf("") }
     var name by rememberSaveable { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -275,7 +366,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 name = ""
                 scope.launch {
                     bottomSheetState.hide()
-                    openBottomSheet = false
+                    onOpenBottomSheetChange(false)
                 }
                 viewModel.resetState()
             }
@@ -286,35 +377,11 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
         }
     }
 
-    // App content
-    Column(
-        horizontalAlignment = Alignment.End,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Button(
-            onClick = { openBottomSheet = !openBottomSheet },
-            shape = RoundedCornerShape(15.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Add,
-                contentDescription = "Add Link",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(end = 2.dp),
-            )
-            Text(
-                text = "Add Link",
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
-
     // Sheet content
     if (openBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
-                openBottomSheet = false
+                onOpenBottomSheetChange(false)
                 errorMessage = null
                 viewModel.resetState()
             },
@@ -335,7 +402,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                         onClick = {
                             scope.launch {
                                 bottomSheetState.hide()
-                                openBottomSheet = false
+                                onOpenBottomSheetChange(false)
                                 errorMessage = null
                                 viewModel.resetState()
                             }
@@ -354,7 +421,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                 if (errorMessage != null) {
                     Text(
                         text = errorMessage!!,
-                        color = Color.Red,
+                        color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(vertical = 8.dp),
                     )
                 }
@@ -392,7 +459,7 @@ fun ModalBottomSheetAddUrl(viewModel: MainViewModel = hiltViewModel()) {
                     if (uiState is AddLinkUiState.Loading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
-                            color = Color.White,
+                            color = MaterialTheme.colorScheme.onPrimary,
                         )
                     } else {
                         Text(stringResource(R.string.submit))

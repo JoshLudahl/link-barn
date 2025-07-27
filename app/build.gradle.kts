@@ -1,3 +1,5 @@
+import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.android.kotlin)
@@ -6,15 +8,6 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kotlin.serializable)
-}
-
-ktlint {
-    android.set(true)
-    verbose.set(true)
-    outputToConsole.set(true)
-    filter {
-        exclude { element -> element.file.path.contains("generated/") }
-    }
 }
 
 android {
@@ -82,6 +75,31 @@ kotlin {
     jvmToolchain(21)
 }
 
+ktlint {
+    android = true
+    ignoreFailures = false
+    verbose = true
+    outputToConsole = true
+    filter {
+        exclude { element -> element.file.path.contains("generated/") }
+    }
+    reporters {
+        reporter(ReporterType.CHECKSTYLE)
+        reporter(ReporterType.JSON)
+        reporter(ReporterType.HTML)
+    }
+    additionalEditorconfig.set(
+        mapOf(
+            "max_line_length" to "off",
+            "ktlint_function_naming_ignore_when_annotated_with" to "Composable",
+        ),
+    )
+}
+
+tasks.named("preBuild") {
+    dependsOn("ktlintFormat")
+}
+
 dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
@@ -95,7 +113,6 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material)
 
     implementation(libs.androidx.navigation.compose)
 

@@ -10,10 +10,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.softklass.linkbarn.ui.main.MainScreen
 import com.softklass.linkbarn.ui.main.MainViewModel
+import com.softklass.linkbarn.ui.settings.SettingsScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
-private sealed interface Navigation {
+sealed interface Navigation {
     @Serializable
     data object Main : Navigation
 
@@ -57,6 +58,30 @@ fun AppNavHost() {
         ) {
             MainScreen(
                 viewModel = hiltViewModel<MainViewModel>(),
+                onNavigateToSettings = {
+                    navController.navigate(Navigation.Settings)
+                },
+            )
+        }
+
+        composable<Navigation.Settings>(
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(animationTween),
+                )
+            },
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(animationTween),
+                )
+            },
+        ) {
+            SettingsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
             )
         }
     }
