@@ -85,7 +85,7 @@ fun MainScreen(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             BottomAppBar(
-                // modifier = Modifier.height(56.dp),
+                // modifier = Modifier.height(66.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
                 windowInsets =
                 WindowInsets(
