@@ -3,7 +3,9 @@ package com.softklass.linkbarn.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
+import com.softklass.linkbarn.data.repository.CategoryRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,11 +25,13 @@ enum class LinkFilter {
     ALL,
     VISITED,
     UNVISITED,
+    CATEGORY,
 }
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val linkRepository: LinkDataRepository,
+    private val categoryRepository: CategoryRepository,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
@@ -37,11 +41,27 @@ class MainViewModel @Inject constructor(
     private val _editLinkUiState = MutableStateFlow<EditLinkUiState>(EditLinkUiState.Initial)
     val editLinkUiState: StateFlow<EditLinkUiState> = _editLinkUiState
 
+    private val _categoryUiState = MutableStateFlow<CategoryUiState>(CategoryUiState.Initial)
+    val categoryUiState: StateFlow<CategoryUiState> = _categoryUiState
+
     private val _currentFilter = MutableStateFlow(LinkFilter.ALL)
     val currentFilter: StateFlow<LinkFilter> = _currentFilter
 
+    private val _selectedCategoryId = MutableStateFlow<String?>(null)
+    val selectedCategoryId: StateFlow<String?> = _selectedCategoryId
+
+    private val _selectedCategories = MutableStateFlow<List<Category>>(emptyList())
+    val selectedCategories: StateFlow<List<Category>> = _selectedCategories
+
     // Track all links separately to determine if we should show segmented buttons
     val allLinks: StateFlow<List<Link>> = linkRepository.getAllLinks().stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList(),
+    )
+
+    // Get all categories
+    val allCategories: StateFlow<List<Category>> = categoryRepository.getAllCategories().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
@@ -53,6 +73,14 @@ class MainViewModel @Inject constructor(
             LinkFilter.ALL -> linkRepository.getAllLinks()
             LinkFilter.VISITED -> linkRepository.getVisitedLinks()
             LinkFilter.UNVISITED -> linkRepository.getUnvisitedLinks()
+            LinkFilter.CATEGORY -> {
+                val categoryId = _selectedCategoryId.value
+                if (categoryId != null) {
+                    linkRepository.getLinksByCategory(categoryId)
+                } else {
+                    linkRepository.getAllLinks()
+                }
+            }
         }
     }.stateIn(
         scope = viewModelScope,
@@ -60,7 +88,7 @@ class MainViewModel @Inject constructor(
         initialValue = emptyList(),
     )
 
-    fun addLink(name: String, url: String) {
+    fun addLink(name: String, url: String, categoryNames: List<String> = emptyList()) {
         viewModelScope.launch(dispatcher) {
             _uiState.value = AddLinkUiState.Loading
 
@@ -91,10 +119,16 @@ class MainViewModel @Inject constructor(
                     return@launch
                 }
 
+                // Process categories
+                val categoryIds = categoryNames.map { categoryName ->
+                    categoryRepository.getOrCreateCategory(categoryName.trim()).id
+                }
+
                 // Create and insert new link
                 val newLink = Link(
                     name = name,
                     uri = uri,
+                    categoryIds = categoryIds,
                 )
                 linkRepository.insertLink(newLink)
                 _uiState.value = AddLinkUiState.Success
@@ -112,7 +146,7 @@ class MainViewModel @Inject constructor(
         _editLinkUiState.value = EditLinkUiState.Initial
     }
 
-    fun editLink(link: Link, name: String, url: String) {
+    fun editLink(link: Link, name: String, url: String, categoryNames: List<String> = emptyList()) {
         viewModelScope.launch(dispatcher) {
             _editLinkUiState.value = EditLinkUiState.Loading
 
@@ -143,10 +177,16 @@ class MainViewModel @Inject constructor(
                     return@launch
                 }
 
+                // Process categories
+                val categoryIds = categoryNames.map { categoryName ->
+                    categoryRepository.getOrCreateCategory(categoryName.trim()).id
+                }
+
                 // Create and update link
                 val updatedLink = link.copy(
                     name = name,
                     uri = uri,
+                    categoryIds = categoryIds,
                     updated = java.time.Instant.now(),
                 )
                 linkRepository.updateLink(updatedLink)
@@ -154,6 +194,68 @@ class MainViewModel @Inject constructor(
             } catch (e: Exception) {
                 _editLinkUiState.value = EditLinkUiState.Error("Failed to update link: ${e.message}")
             }
+        }
+    }
+
+    suspend fun getCategoryName(categoryId: String): String? = categoryRepository.getCategoryById(categoryId)?.name
+
+    suspend fun getCategoriesForLink(link: Link): List<Category> = link.categoryIds.mapNotNull { categoryId ->
+        categoryRepository.getCategoryById(categoryId)
+    }
+
+    fun addCategory(name: String) {
+        if (name.isBlank()) {
+            _categoryUiState.value = CategoryUiState.Error("Category name cannot be empty")
+            return
+        }
+
+        viewModelScope.launch(dispatcher) {
+            _categoryUiState.value = CategoryUiState.Loading
+            try {
+                val existingCategory = categoryRepository.getCategoryByName(name.trim())
+                if (existingCategory != null) {
+                    _categoryUiState.value = CategoryUiState.Error("Category already exists")
+                    return@launch
+                }
+
+                val newCategory = Category(name = name.trim())
+                categoryRepository.insertCategory(newCategory)
+                _categoryUiState.value = CategoryUiState.Success
+            } catch (e: Exception) {
+                Log.e("MainViewModel", "Error adding category", e)
+                _categoryUiState.value = CategoryUiState.Error("Failed to add category: ${e.message}")
+            }
+        }
+    }
+
+    fun resetCategoryState() {
+        _categoryUiState.value = CategoryUiState.Initial
+    }
+
+    fun selectCategory(category: Category) {
+        val currentCategories = _selectedCategories.value.toMutableList()
+        if (!currentCategories.contains(category)) {
+            currentCategories.add(category)
+            _selectedCategories.value = currentCategories
+        }
+    }
+
+    fun unselectCategory(category: Category) {
+        val currentCategories = _selectedCategories.value.toMutableList()
+        currentCategories.remove(category)
+        _selectedCategories.value = currentCategories
+    }
+
+    fun clearSelectedCategories() {
+        _selectedCategories.value = emptyList()
+    }
+
+    fun selectCategoryFilter(categoryId: String?) {
+        _selectedCategoryId.value = categoryId
+        if (categoryId != null) {
+            _currentFilter.value = LinkFilter.CATEGORY
+        } else {
+            _currentFilter.value = LinkFilter.ALL
         }
     }
 
@@ -170,6 +272,10 @@ class MainViewModel @Inject constructor(
 
     fun setFilter(filter: LinkFilter) {
         _currentFilter.value = filter
+        // Reset selected category if not filtering by category
+        if (filter != LinkFilter.CATEGORY) {
+            _selectedCategoryId.value = null
+        }
     }
 
     fun markLinkAsVisited(link: Link) {
@@ -196,4 +302,11 @@ sealed class EditLinkUiState {
     object Loading : EditLinkUiState()
     object Success : EditLinkUiState()
     data class Error(val message: String) : EditLinkUiState()
+}
+
+sealed class CategoryUiState {
+    object Initial : CategoryUiState()
+    object Loading : CategoryUiState()
+    object Success : CategoryUiState()
+    data class Error(val message: String) : CategoryUiState()
 }

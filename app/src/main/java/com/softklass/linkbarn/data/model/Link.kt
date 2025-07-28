@@ -27,4 +27,7 @@ data class Link(
 
     @ColumnInfo(name = "visited")
     val visited: Boolean = false,
+
+    @ColumnInfo(name = "categoryIds")
+    val categoryIds: List<String> = emptyList(),
 )

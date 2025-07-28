@@ -1,13 +1,17 @@
 package com.softklass.linkbarn.ui.main
 
 import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -15,8 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Delete
@@ -37,9 +44,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -58,15 +62,21 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.R
+import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import kotlinx.coroutines.launch
 
@@ -158,29 +168,126 @@ fun MainScreen(
             val currentFilter by viewModel.currentFilter.collectAsState()
             val allLinks by viewModel.allLinks.collectAsState()
 
-            // Only show segmented buttons if there are any links
+            // Only show filter buttons if there are any links
             if (allLinks.isNotEmpty()) {
-                SingleChoiceSegmentedButtonRow(
-                    modifier = Modifier.fillMaxWidth(),
+                // Material 3 expressive button group
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
-                    SegmentedButton(
-                        selected = currentFilter == LinkFilter.ALL,
+                    // All button
+                    Button(
                         onClick = { viewModel.setFilter(LinkFilter.ALL) },
-                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 3),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        shape = RoundedCornerShape(
+                            topStart = 16.dp,
+                            bottomStart = 16.dp,
+                            topEnd = 0.dp,
+                            bottomEnd = 0.dp,
+                        ),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (currentFilter == LinkFilter.ALL) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            },
+                            contentColor = if (currentFilter == LinkFilter.ALL) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        ),
+                        contentPadding = PaddingValues(0.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 0.dp,
+                            focusedElevation = 0.dp,
+                        ),
                     ) {
                         Text("All")
                     }
-                    SegmentedButton(
-                        selected = currentFilter == LinkFilter.UNVISITED,
+
+                    // Vertical divider
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.outlineVariant),
+                    )
+
+                    // Unviewed button
+                    Button(
                         onClick = { viewModel.setFilter(LinkFilter.UNVISITED) },
-                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 3),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        shape = RectangleShape,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (currentFilter == LinkFilter.UNVISITED) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            },
+                            contentColor = if (currentFilter == LinkFilter.UNVISITED) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        ),
+                        contentPadding = PaddingValues(0.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 0.dp,
+                            focusedElevation = 0.dp,
+                        ),
                     ) {
                         Text("Unviewed")
                     }
-                    SegmentedButton(
-                        selected = currentFilter == LinkFilter.VISITED,
+
+                    // Vertical divider
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .background(MaterialTheme.colorScheme.outlineVariant),
+                    )
+
+                    // Viewed button
+                    Button(
                         onClick = { viewModel.setFilter(LinkFilter.VISITED) },
-                        shape = SegmentedButtonDefaults.itemShape(index = 2, count = 3),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(),
+                        shape = RoundedCornerShape(
+                            topStart = 0.dp,
+                            bottomStart = 0.dp,
+                            topEnd = 16.dp,
+                            bottomEnd = 16.dp,
+                        ),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (currentFilter == LinkFilter.VISITED) {
+                                MaterialTheme.colorScheme.primaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            },
+                            contentColor = if (currentFilter == LinkFilter.VISITED) {
+                                MaterialTheme.colorScheme.onPrimaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                        ),
+                        contentPadding = PaddingValues(0.dp),
+                        elevation = ButtonDefaults.buttonElevation(
+                            defaultElevation = 0.dp,
+                            pressedElevation = 0.dp,
+                            focusedElevation = 0.dp,
+                        ),
                     ) {
                         Text("Viewed")
                     }
@@ -192,6 +299,53 @@ fun MainScreen(
                     .fillMaxWidth()
                     .height(8.dp),
             )
+
+            // Category filter chips
+            val allCategories by viewModel.allCategories.collectAsState()
+            val selectedCategoryId by viewModel.selectedCategoryId.collectAsState()
+
+            if (allCategories.isNotEmpty()) {
+                Text(
+                    text = "Filter by category:",
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+
+                androidx.compose.foundation.lazy.LazyRow(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    // "All" chip
+                    item {
+                        androidx.compose.material3.FilterChip(
+                            selected = selectedCategoryId == null,
+                            onClick = { viewModel.selectCategoryFilter(null) },
+                            label = { Text("All") },
+                            modifier = Modifier.padding(vertical = 4.dp),
+                        )
+                    }
+
+                    // Category chips
+                    items(allCategories) { category ->
+                        androidx.compose.material3.FilterChip(
+                            selected = selectedCategoryId == category.id,
+                            onClick = { viewModel.selectCategoryFilter(category.id) },
+                            label = { Text(category.name) },
+                            modifier = Modifier.padding(vertical = 4.dp),
+                        )
+                    }
+                }
+
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp),
+                )
+            }
 
             Row {
                 Column(
@@ -218,6 +372,7 @@ fun MainScreen(
                                         LinkFilter.VISITED -> "No viewed links"
                                         LinkFilter.UNVISITED -> "No unviewed links"
                                         LinkFilter.ALL -> "No links added yet"
+                                        LinkFilter.CATEGORY -> "No links in this category"
                                     }
 
                                     Text(
@@ -393,6 +548,65 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // Categories field
+                        var editCategoriesText by rememberSaveable(link.id) { mutableStateOf("") }
+                        val categories = remember(link.id) { mutableStateOf<List<Category>>(emptyList()) }
+
+                        LaunchedEffect(link.categoryIds) {
+                            categories.value = viewModel.getCategoriesForLink(link)
+                            if (editCategoriesText.isEmpty()) {
+                                editCategoriesText = categories.value.joinToString(", ") { it.name }
+                            }
+                        }
+
+                        OutlinedTextField(
+                            value = editCategoriesText,
+                            onValueChange = { editCategoriesText = it },
+                            label = { Text("Categories (comma separated)") },
+                            placeholder = { Text("e.g. Work, Personal, Shopping") },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(),
+                        )
+
+                        // Show existing categories as chips for quick selection
+                        val allCategories by viewModel.allCategories.collectAsState()
+                        if (allCategories.isNotEmpty()) {
+                            Text(
+                                text = "Add Category:",
+                                style = MaterialTheme.typography.labelMedium,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp, bottom = 4.dp),
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp),
+                                horizontalArrangement = Arrangement.Start,
+                            ) {
+                                allCategories.take(5).forEach { category ->
+                                    androidx.compose.material3.AssistChip(
+                                        onClick = {
+                                            val currentCategories = editCategoriesText.split(",")
+                                                .map { it.trim() }
+                                                .filter { it.isNotEmpty() }
+                                                .toMutableList()
+
+                                            if (!currentCategories.contains(category.name)) {
+                                                currentCategories.add(category.name)
+                                                editCategoriesText = currentCategories.joinToString(", ")
+                                            }
+                                        },
+                                        label = { Text(category.name) },
+                                        modifier = Modifier.padding(end = 8.dp),
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
                         // Action buttons
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -412,7 +626,12 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             Spacer(modifier = Modifier.width(8.dp))
 
                             Button(
-                                onClick = { viewModel.editLink(link, editName, editUrl) },
+                                onClick = {
+                                    val categoryNames = editCategoriesText.split(",")
+                                        .map { it.trim() }
+                                        .filter { it.isNotEmpty() }
+                                    viewModel.editLink(link, editName, editUrl, categoryNames)
+                                },
                                 enabled = editLinkUiState !is EditLinkUiState.Loading,
                             ) {
                                 if (editLinkUiState is EditLinkUiState.Loading) {
@@ -451,10 +670,13 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                 text = link.uri.toString(),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
                                 Text(
                                     text = if (link.visited) "Viewed" else "Unviewed",
@@ -466,6 +688,47 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                     },
                                     fontWeight = FontWeight.Bold,
                                 )
+
+                                // Display categories if any
+                                if (link.categoryIds.isNotEmpty()) {
+                                    val categories = remember(link.categoryIds) {
+                                        mutableStateOf<List<Category>>(emptyList())
+                                    }
+
+                                    // Load categories for this link
+                                    LaunchedEffect(link.categoryIds) {
+                                        categories.value = viewModel.getCategoriesForLink(link)
+                                    }
+
+                                    // Use a Row to display category chips
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                        modifier = Modifier.padding(top = 4.dp),
+                                    ) {
+                                        categories.value.take(3).forEach { category ->
+                                            androidx.compose.material3.SuggestionChip(
+                                                onClick = { viewModel.selectCategoryFilter(category.id) },
+                                                label = {
+                                                    Text(
+                                                        text = category.name,
+                                                        fontSize = 10.sp,
+                                                    )
+                                                },
+                                                modifier = Modifier.height(24.dp),
+                                            )
+                                        }
+
+                                        // Show count of additional categories if there are more than 3
+                                        if (categories.value.size > 3) {
+                                            Text(
+                                                text = "+${categories.value.size - 3} more",
+                                                fontSize = 10.sp,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.padding(start = 4.dp),
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                         Row(
@@ -507,6 +770,91 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     )
 }
 
+@Composable
+fun CategoryDialog(
+    viewModel: MainViewModel,
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+) {
+    val categoryUiState by viewModel.categoryUiState.collectAsState()
+    var categoryName by rememberSaveable { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(categoryUiState) {
+        when (categoryUiState) {
+            is CategoryUiState.Error -> {
+                errorMessage = (categoryUiState as CategoryUiState.Error).message
+            }
+            is CategoryUiState.Success -> {
+                errorMessage = null
+                categoryName = ""
+                onDismiss()
+                viewModel.resetCategoryState()
+            }
+            else -> {
+                errorMessage = null
+            }
+        }
+    }
+
+    if (showDialog) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = {
+                onDismiss()
+                viewModel.resetCategoryState()
+            },
+            title = { Text("Create Category") },
+            text = {
+                Column {
+                    if (errorMessage != null) {
+                        Text(
+                            text = errorMessage!!,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                        )
+                    }
+
+                    OutlinedTextField(
+                        value = categoryName,
+                        onValueChange = { categoryName = it },
+                        label = { Text("Category Name") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = errorMessage != null,
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.addCategory(categoryName)
+                    },
+                    enabled = categoryUiState !is CategoryUiState.Loading,
+                ) {
+                    if (categoryUiState is CategoryUiState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                        )
+                    } else {
+                        Text("Create")
+                    }
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        onDismiss()
+                        viewModel.resetCategoryState()
+                    },
+                ) {
+                    Text("Cancel")
+                }
+            },
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModalBottomSheetAddUrl(
@@ -516,12 +864,23 @@ fun ModalBottomSheetAddUrl(
 ) {
     var url by rememberSaveable { mutableStateOf("") }
     var name by rememberSaveable { mutableStateOf("") }
+    var showCategoryDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val nameFocusRequester = remember { FocusRequester() }
 
     val uiState by viewModel.uiState.collectAsState()
+    val allCategories by viewModel.allCategories.collectAsState()
+    val selectedCategories by viewModel.selectedCategories.collectAsState()
+
+    // Show category creation dialog
+    CategoryDialog(
+        viewModel = viewModel,
+        showDialog = showCategoryDialog,
+        onDismiss = { showCategoryDialog = false },
+    )
 
     LaunchedEffect(uiState) {
         when (uiState) {
@@ -533,6 +892,7 @@ fun ModalBottomSheetAddUrl(
                 errorMessage = null
                 url = ""
                 name = ""
+                viewModel.clearSelectedCategories()
                 scope.launch {
                     bottomSheetState.hide()
                     onOpenBottomSheetChange(false)
@@ -553,6 +913,7 @@ fun ModalBottomSheetAddUrl(
                 onOpenBottomSheetChange(false)
                 errorMessage = null
                 viewModel.resetState()
+                viewModel.clearSelectedCategories()
             },
             sheetState = bottomSheetState,
         ) {
@@ -574,6 +935,7 @@ fun ModalBottomSheetAddUrl(
                                 onOpenBottomSheetChange(false)
                                 errorMessage = null
                                 viewModel.resetState()
+                                viewModel.clearSelectedCategories()
                             }
                         },
                     ) {
@@ -603,6 +965,12 @@ fun ModalBottomSheetAddUrl(
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
                     colors = TextFieldDefaults.colors(),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            nameFocusRequester.requestFocus()
+                        },
+                    ),
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -612,16 +980,85 @@ fun ModalBottomSheetAddUrl(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Name") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(nameFocusRequester),
                     singleLine = true,
                     colors = TextFieldDefaults.colors(),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            // No action needed here
+                        },
+                    ),
                 )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Categories Section
+                Text(
+                    text = "Categories",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                )
+
+                // Button to create a new category
+                Button(
+                    onClick = { showCategoryDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Create New Category")
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Category Chip Group
+                if (allCategories.isNotEmpty()) {
+                    Text(
+                        text = "Categories:",
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp, bottom = 4.dp),
+                    )
+
+                    LazyRow(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        items(allCategories) { category ->
+                            val isSelected = selectedCategories.contains(category)
+                            androidx.compose.material3.FilterChip(
+                                selected = isSelected,
+                                onClick = {
+                                    if (isSelected) {
+                                        viewModel.unselectCategory(category)
+                                    } else {
+                                        viewModel.selectCategory(category)
+                                    }
+                                },
+                                label = { Text(category.name) },
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Submit button
                 Button(
-                    onClick = { viewModel.addLink(name, url) },
+                    onClick = {
+                        if (selectedCategories.isEmpty()) {
+                            errorMessage = "Please select at least one category"
+                        } else {
+                            val categoryNames = selectedCategories.map { it.name }
+                            viewModel.addLink(name, url, categoryNames)
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = uiState !is AddLinkUiState.Loading,
                 ) {

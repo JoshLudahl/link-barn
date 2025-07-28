@@ -3,6 +3,7 @@ package com.softklass.linkbarn.di
 import android.content.Context
 import androidx.room.Room
 import com.softklass.linkbarn.data.db.AppDatabase
+import com.softklass.linkbarn.data.db.dao.CategoryDao
 import com.softklass.linkbarn.data.db.dao.LinkDao
 import com.softklass.linkbarn.data.preferences.SettingsPreferences
 import dagger.Module
@@ -25,12 +26,17 @@ object AppModule {
         context.applicationContext,
         AppDatabase::class.java,
         DATABASE_NAME,
-    ).fallbackToDestructiveMigration(false) // During development, we'll allow destructive migrations
+    ).addMigrations(AppDatabase.MIGRATION_1_2)
+        .fallbackToDestructiveMigration(false) // During development, we'll allow destructive migrations
         .build()
 
     @Provides
     @Singleton
     fun provideLinkDao(database: AppDatabase): LinkDao = database.linkDao()
+
+    @Provides
+    @Singleton
+    fun provideCategoryDao(database: AppDatabase): CategoryDao = database.categoryDao()
 
     @Provides
     fun provideCoroutineDispatcher(): CoroutineDispatcher = Dispatchers.IO

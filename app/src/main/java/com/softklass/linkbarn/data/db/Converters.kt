@@ -17,4 +17,10 @@ class Converters {
 
     @TypeConverter
     fun uriToString(uri: URI?): String? = uri?.toString()
+
+    @TypeConverter
+    fun fromStringList(value: List<String>?): String? = value?.joinToString(",")
+
+    @TypeConverter
+    fun toStringList(value: String?): List<String> = if (value.isNullOrEmpty()) emptyList() else value.split(",")
 }
