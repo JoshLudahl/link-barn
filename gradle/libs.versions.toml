@@ -24,6 +24,7 @@ junitVersion = "1.2.1"
 lifecycleRuntimeKtx = "2.9.2"
 navigationCompose = "2.9.2"
 uiTextGoogleFonts = "1.8.3"
+appUpdateKtx = "2.1.0"
 
 [libraries]
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
@@ -34,8 +35,6 @@ androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
-androidx-compose-material = { module = "androidx.compose.material:material" }
-
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferences" }
@@ -61,6 +60,7 @@ androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "
 androidx-room-common = { module = "androidx.room:room-common", version.ref = "roomVersion" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
 androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
+app-update-ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "appUpdateKtx" }
 
 [plugins]
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
