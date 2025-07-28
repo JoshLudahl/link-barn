@@ -5,18 +5,18 @@ import com.softklass.linkbarn.data.model.Category
 import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
-class CategoryRepository @Inject constructor(
+open class CategoryRepository @Inject constructor(
     private val categoryDao: CategoryDao,
 ) {
-    fun getAllCategories(): Flow<List<Category>> = categoryDao.getAllCategories()
+    open fun getAllCategories(): Flow<List<Category>> = categoryDao.getAllCategories()
 
-    suspend fun getCategoryById(id: String): Category? = categoryDao.getCategoryById(id)
+    open suspend fun getCategoryById(id: String): Category? = categoryDao.getCategoryById(id)
 
-    suspend fun getCategoryByName(name: String): Category? = categoryDao.getCategoryByName(name)
+    open suspend fun getCategoryByName(name: String): Category? = categoryDao.getCategoryByName(name)
 
-    suspend fun insertCategory(category: Category): Long = categoryDao.insertCategory(category)
+    open suspend fun insertCategory(category: Category): Long = categoryDao.insertCategory(category)
 
-    suspend fun getOrCreateCategory(name: String): Category {
+    open suspend fun getOrCreateCategory(name: String): Category {
         val existingCategory = getCategoryByName(name)
         if (existingCategory != null) {
             return existingCategory
@@ -27,9 +27,9 @@ class CategoryRepository @Inject constructor(
         return newCategory
     }
 
-    suspend fun updateCategory(category: Category) = categoryDao.updateCategory(category)
+    open suspend fun updateCategory(category: Category) = categoryDao.updateCategory(category)
 
-    suspend fun deleteCategory(category: Category) = categoryDao.deleteCategory(category)
+    open suspend fun deleteCategory(category: Category) = categoryDao.deleteCategory(category)
 
-    suspend fun deleteCategoryById(id: String) = categoryDao.deleteCategoryById(id)
+    open suspend fun deleteCategoryById(id: String) = categoryDao.deleteCategoryById(id)
 }

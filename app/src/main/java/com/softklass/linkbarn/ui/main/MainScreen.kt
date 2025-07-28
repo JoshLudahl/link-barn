@@ -23,13 +23,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +36,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -162,97 +164,61 @@ fun MainScreen(
 
             // Only show filter buttons if there are any links
             if (allLinks.isNotEmpty()) {
-                // Material 3 expressive button group
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    // All button
-                    val numButtons = 3
-                    ButtonGroup(
-                        overflowIndicator = { menuState ->
-                            FilledIconButton(
-                                onClick = {
-                                    if (menuState.isExpanded) {
-                                        menuState.dismiss()
-                                    } else {
-                                        menuState.show()
-                                    }
-                                },
-                            ) {
-                                Icon(
-                                    painterResource(R.drawable.ic_more_vert),
-                                    contentDescription = "Localized description",
-                                )
-                            }
-                        },
-                    ) {
+                Column {
+                    Text(
+                        text = "Filter by viewed".uppercase(),
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
 
-                    }
-
-                    // All button
-                    Button(
-                        onClick = { viewModel.setFilter(LinkFilter.ALL) },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (currentFilter == LinkFilter.ALL) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
-                            contentColor = if (currentFilter == LinkFilter.ALL) {
-                                MaterialTheme.colorScheme.onPrimary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        ),
-                        shape = RoundedCornerShape(16.dp),
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Text("All")
-                    }
+                        // Use SingleChoiceSegmentedButtonRow for filter buttons
+                        SingleChoiceSegmentedButtonRow(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            // All button
+                            SegmentedButton(
+                                selected = currentFilter == LinkFilter.ALL,
+                                onClick = { viewModel.setFilter(LinkFilter.ALL) },
+                                modifier = Modifier.weight(1f),
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = 0,
+                                    count = 3,
+                                ),
+                                label = { Text("All") },
+                            )
 
-                    // Unviewed button
-                    Button(
-                        onClick = { viewModel.setFilter(LinkFilter.UNVISITED) },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (currentFilter == LinkFilter.UNVISITED) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
-                            contentColor = if (currentFilter == LinkFilter.UNVISITED) {
-                                MaterialTheme.colorScheme.onPrimary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                    ) {
-                        Text("Unviewed")
-                    }
+                            // Unviewed button
+                            SegmentedButton(
+                                selected = currentFilter == LinkFilter.UNVISITED,
+                                onClick = { viewModel.setFilter(LinkFilter.UNVISITED) },
+                                modifier = Modifier.weight(1f),
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = 1,
+                                    count = 3,
+                                ),
+                                label = { Text("Unviewed") },
+                            )
 
-                    // Viewed button
-                    Button(
-                        onClick = { viewModel.setFilter(LinkFilter.VISITED) },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (currentFilter == LinkFilter.VISITED) {
-                                MaterialTheme.colorScheme.primary
-                            } else {
-                                MaterialTheme.colorScheme.surfaceVariant
-                            },
-                            contentColor = if (currentFilter == LinkFilter.VISITED) {
-                                MaterialTheme.colorScheme.onPrimary
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                    ) {
-                        Text("Viewed")
+                            // Viewed button
+                            SegmentedButton(
+                                selected = currentFilter == LinkFilter.VISITED,
+                                onClick = { viewModel.setFilter(LinkFilter.VISITED) },
+                                modifier = Modifier.weight(1f),
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = 2,
+                                    count = 3,
+                                ),
+                                label = { Text("Viewed") },
+                            )
+                        }
                     }
                 }
             }
@@ -265,18 +231,18 @@ fun MainScreen(
 
             // Category filter chips
             val allCategories by viewModel.allCategories.collectAsState()
-            val selectedCategoryId by viewModel.selectedCategoryId.collectAsState()
+            val selectedCategoryIds by viewModel.selectedCategoryIds.collectAsState()
 
             if (allCategories.isNotEmpty()) {
                 Text(
-                    text = "Filter by category:",
+                    text = "Filter by category".uppercase(),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp),
                 )
 
-                androidx.compose.foundation.lazy.LazyRow(
+                LazyRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
@@ -285,7 +251,7 @@ fun MainScreen(
                     // "All" chip
                     item {
                         androidx.compose.material3.FilterChip(
-                            selected = selectedCategoryId == null,
+                            selected = selectedCategoryIds.isEmpty(),
                             onClick = { viewModel.selectCategoryFilter(null) },
                             label = { Text("All") },
                             modifier = Modifier.padding(vertical = 4.dp),
@@ -295,7 +261,7 @@ fun MainScreen(
                     // Category chips
                     items(allCategories) { category ->
                         androidx.compose.material3.FilterChip(
-                            selected = selectedCategoryId == category.id,
+                            selected = selectedCategoryIds.contains(category.id),
                             onClick = { viewModel.selectCategoryFilter(category.id) },
                             label = { Text(category.name) },
                             modifier = Modifier.padding(vertical = 4.dp),
@@ -641,17 +607,6 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                             ) {
-                                Text(
-                                    text = if (link.visited) "Viewed" else "Unviewed",
-                                    fontSize = 10.sp,
-                                    color = if (link.visited) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.tertiary
-                                    },
-                                    fontWeight = FontWeight.Bold,
-                                )
-
                                 // Display categories if any
                                 if (link.categoryIds.isNotEmpty()) {
                                     val categories = remember(link.categoryIds) {
@@ -669,8 +624,9 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                         modifier = Modifier.padding(top = 4.dp),
                                     ) {
                                         categories.value.take(3).forEach { category ->
-                                            androidx.compose.material3.SuggestionChip(
-                                                onClick = { viewModel.selectCategoryFilter(category.id) },
+
+                                            ElevatedAssistChip(
+                                                onClick = { },
                                                 label = {
                                                     Text(
                                                         text = category.name,
@@ -694,37 +650,52 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                 }
                             }
                         }
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
+                        Column(
+                            horizontalAlignment = Alignment.End,
                         ) {
-                            Icon(
-                                painterResource(R.drawable.ic_share),
-                                contentDescription = "Share link",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        val sendIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            putExtra(Intent.EXTRA_TEXT, link.uri.toString())
-                                            type = "text/plain"
-                                        }
-                                        context.startActivity(Intent.createChooser(sendIntent, null))
-                                    },
+                            Text(
+                                text = if (link.visited) "Viewed" else "Unviewed",
+                                fontSize = 10.sp,
+                                color = if (link.visited) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.tertiary
+                                },
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(end = 8.dp),
                             )
-                            Icon(
-                                painterResource(R.drawable.open_in_browser_24px),
-                                contentDescription = "Open in browser",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        // Mark the link as visited
-                                        viewModel.markLinkAsVisited(link)
-                                        // Open the link in browser
-                                        val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
-                                        context.startActivity(intent)
-                                    },
-                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.Top,
+                            ) {
+                                Icon(
+                                    painterResource(R.drawable.ic_share),
+                                    contentDescription = "Share link",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable {
+                                            val sendIntent = Intent().apply {
+                                                action = Intent.ACTION_SEND
+                                                putExtra(Intent.EXTRA_TEXT, link.uri.toString())
+                                                type = "text/plain"
+                                            }
+                                            context.startActivity(Intent.createChooser(sendIntent, null))
+                                        },
+                                )
+                                Icon(
+                                    painterResource(R.drawable.open_in_browser_24px),
+                                    contentDescription = "Open in browser",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable {
+                                            // Mark the link as visited
+                                            viewModel.markLinkAsVisited(link)
+                                            // Open the link in browser
+                                            val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
+                                            context.startActivity(intent)
+                                        },
+                                )
+                            }
                         }
                     }
                 }
@@ -959,21 +930,6 @@ fun ModalBottomSheetAddUrl(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Categories Section
-                Text(
-                    text = "Categories",
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                )
-
-                // Button to create a new category
-                Button(
-                    onClick = { showCategoryDialog = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text("Create New Category")
-                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -1008,6 +964,14 @@ fun ModalBottomSheetAddUrl(
                             )
                         }
                     }
+                }
+
+                // Button to create a new category
+                Button(
+                    onClick = { showCategoryDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Create New Category")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

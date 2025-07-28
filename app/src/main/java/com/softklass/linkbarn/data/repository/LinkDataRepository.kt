@@ -7,29 +7,35 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
-class LinkDataRepository @Inject constructor(
+open class LinkDataRepository @Inject constructor(
     private val linkDao: LinkDao,
 ) {
-    fun getAllLinks(): Flow<List<Link>> = linkDao.getAllLinks()
+    open fun getAllLinks(): Flow<List<Link>> = linkDao.getAllLinks()
 
-    fun getVisitedLinks(): Flow<List<Link>> = linkDao.getVisitedLinks()
+    open fun getVisitedLinks(): Flow<List<Link>> = linkDao.getVisitedLinks()
 
-    fun getUnvisitedLinks(): Flow<List<Link>> = linkDao.getUnvisitedLinks()
+    open fun getUnvisitedLinks(): Flow<List<Link>> = linkDao.getUnvisitedLinks()
 
-    fun getLinksByCategory(categoryId: String): Flow<List<Link>> = linkDao.getAllLinks().map { links ->
+    open fun getLinksByCategory(categoryId: String): Flow<List<Link>> = linkDao.getAllLinks().map { links ->
         links.filter { link -> link.categoryIds.contains(categoryId) }
     }
 
-    suspend fun getLinkByUri(uri: URI): Link? = linkDao.getLinkByUri(uri)
+    open fun getLinksByCategories(categoryIds: List<String>): Flow<List<Link>> = linkDao.getAllLinks().map { links ->
+        links.filter { link ->
+            link.categoryIds.any { categoryId -> categoryIds.contains(categoryId) }
+        }
+    }
 
-    suspend fun insertLink(link: Link) = linkDao.insertLink(link)
+    open suspend fun getLinkByUri(uri: URI): Link? = linkDao.getLinkByUri(uri)
 
-    suspend fun markLinkAsVisited(link: Link) {
+    open suspend fun insertLink(link: Link) = linkDao.insertLink(link)
+
+    open suspend fun markLinkAsVisited(link: Link) {
         val updatedLink = link.copy(visited = true)
         linkDao.updateLink(updatedLink)
     }
 
-    suspend fun addCategoryToLink(link: Link, categoryId: String) {
+    open suspend fun addCategoryToLink(link: Link, categoryId: String) {
         if (!link.categoryIds.contains(categoryId)) {
             val updatedLink = link.copy(
                 categoryIds = link.categoryIds + categoryId,
@@ -39,7 +45,7 @@ class LinkDataRepository @Inject constructor(
         }
     }
 
-    suspend fun removeCategoryFromLink(link: Link, categoryId: String) {
+    open suspend fun removeCategoryFromLink(link: Link, categoryId: String) {
         if (link.categoryIds.contains(categoryId)) {
             val updatedLink = link.copy(
                 categoryIds = link.categoryIds.filter { it != categoryId },
@@ -49,7 +55,7 @@ class LinkDataRepository @Inject constructor(
         }
     }
 
-    suspend fun updateLinkCategories(link: Link, categoryIds: List<String>) {
+    open suspend fun updateLinkCategories(link: Link, categoryIds: List<String>) {
         val updatedLink = link.copy(
             categoryIds = categoryIds,
             updated = java.time.Instant.now(),
@@ -57,7 +63,7 @@ class LinkDataRepository @Inject constructor(
         linkDao.updateLink(updatedLink)
     }
 
-    suspend fun updateLink(link: Link) = linkDao.updateLink(link)
+    open suspend fun updateLink(link: Link) = linkDao.updateLink(link)
 
-    suspend fun deleteLink(id: String) = linkDao.deleteLinkById(id)
+    open suspend fun deleteLink(id: String) = linkDao.deleteLinkById(id)
 }

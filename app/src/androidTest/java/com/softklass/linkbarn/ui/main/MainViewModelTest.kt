@@ -2,6 +2,7 @@ package com.softklass.linkbarn.ui.main
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.softklass.linkbarn.data.model.Link
+import com.softklass.linkbarn.data.repository.CategoryRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -25,14 +26,17 @@ class MainViewModelTest {
     @Mock
     private lateinit var repository: LinkDataRepository
 
-    private lateinit var viewModel: MainViewModel
+    @Mock
+    private lateinit var categoryRepository: CategoryRepository
+
+    private lateinit var viewModel: TestMainViewModel
     private val testDispatcher = StandardTestDispatcher()
     private val testScope = TestScope(testDispatcher)
 
     @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
-        viewModel = MainViewModel(repository, testDispatcher)
+        viewModel = TestMainViewModel(repository, categoryRepository, testDispatcher)
     }
 
     @Test
@@ -68,7 +72,7 @@ class MainViewModelTest {
         // Then
         val state = viewModel.uiState.first()
         assertTrue(state is AddLinkUiState.Error)
-        assertEquals("Invalid URL format", (state as AddLinkUiState.Error).message)
+        assertEquals("Invalid URL format. URL must be a valid http:// or https:// address", (state as AddLinkUiState.Error).message)
     }
 
     @Test
@@ -76,11 +80,14 @@ class MainViewModelTest {
         // Given
         val uri = URI("https://example.com")
         val existingLink = Link(name = "Existing Link", uri = uri)
-        whenever(repository.getLinkByUri(uri)).thenReturn(existingLink)
+
+        // Mock the repository to return an existing link for the test URI
+        kotlinx.coroutines.runBlocking {
+            whenever(repository.getLinkByUri(uri)).thenReturn(existingLink)
+        }
 
         // When
         viewModel.addLink("Test Link", "https://example.com")
-        testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
         val state = viewModel.uiState.first()

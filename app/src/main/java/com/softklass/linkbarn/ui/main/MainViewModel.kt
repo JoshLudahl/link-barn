@@ -47,8 +47,8 @@ class MainViewModel @Inject constructor(
     private val _currentFilter = MutableStateFlow(LinkFilter.ALL)
     val currentFilter: StateFlow<LinkFilter> = _currentFilter
 
-    private val _selectedCategoryId = MutableStateFlow<String?>(null)
-    val selectedCategoryId: StateFlow<String?> = _selectedCategoryId
+    private val _selectedCategoryIds = MutableStateFlow<List<String>>(emptyList())
+    val selectedCategoryIds: StateFlow<List<String>> = _selectedCategoryIds
 
     private val _selectedCategories = MutableStateFlow<List<Category>>(emptyList())
     val selectedCategories: StateFlow<List<Category>> = _selectedCategories
@@ -74,11 +74,12 @@ class MainViewModel @Inject constructor(
             LinkFilter.VISITED -> linkRepository.getVisitedLinks()
             LinkFilter.UNVISITED -> linkRepository.getUnvisitedLinks()
             LinkFilter.CATEGORY -> {
-                val categoryId = _selectedCategoryId.value
-                if (categoryId != null) {
-                    linkRepository.getLinksByCategory(categoryId)
+                val categoryIds = _selectedCategoryIds.value
+                if (categoryIds.isNotEmpty()) {
+                    linkRepository.getLinksByCategories(categoryIds)
                 } else {
-                    linkRepository.getAllLinks()
+                    // Return empty list when no categories are selected
+                    kotlinx.coroutines.flow.flowOf(emptyList())
                 }
             }
         }
@@ -251,11 +252,25 @@ class MainViewModel @Inject constructor(
     }
 
     fun selectCategoryFilter(categoryId: String?) {
-        _selectedCategoryId.value = categoryId
-        if (categoryId != null) {
-            _currentFilter.value = LinkFilter.CATEGORY
-        } else {
+        if (categoryId == null) {
+            // "All" category selected - clear all selections
+            _selectedCategoryIds.value = emptyList()
             _currentFilter.value = LinkFilter.ALL
+        } else {
+            // Check if this category is already selected
+            val currentSelection = _selectedCategoryIds.value.toMutableList()
+
+            if (currentSelection.contains(categoryId)) {
+                // If already selected, remove it
+                currentSelection.remove(categoryId)
+            } else {
+                // If not selected, add it
+                currentSelection.add(categoryId)
+            }
+
+            _selectedCategoryIds.value = currentSelection
+            // Always set to CATEGORY filter even when empty to ensure list updates
+            _currentFilter.value = LinkFilter.CATEGORY
         }
     }
 
@@ -272,9 +287,9 @@ class MainViewModel @Inject constructor(
 
     fun setFilter(filter: LinkFilter) {
         _currentFilter.value = filter
-        // Reset selected category if not filtering by category
+        // Reset selected categories if not filtering by category
         if (filter != LinkFilter.CATEGORY) {
-            _selectedCategoryId.value = null
+            _selectedCategoryIds.value = emptyList()
         }
     }
 
