@@ -88,7 +88,7 @@ fun MainScreen(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             BottomAppBar(
-                // modifier = Modifier.height(66.dp),
+                // modifier = Modifier.height(56.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
                 windowInsets =
                 WindowInsets(
@@ -102,7 +102,8 @@ fun MainScreen(
                         Icon(
                             imageVector = Icons.Default.Settings,
                             contentDescription = "Settings",
-                            modifier = Modifier.size(24.dp),
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            // modifier = Modifier.size(24.dp),
                         )
                     }
                 },
@@ -125,7 +126,7 @@ fun MainScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
                 .padding(padding),
         ) {
             Row(
@@ -281,6 +282,25 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     val context = LocalContext.current
     rememberCoroutineScope()
 
+    // State to track if the item is in edit mode
+    var isEditing by rememberSaveable { mutableStateOf(false) }
+    var editName by rememberSaveable { mutableStateOf(link.name ?: "") }
+    var editUrl by rememberSaveable { mutableStateOf(link.uri.toString()) }
+
+    // Observe edit state
+    val editLinkUiState by viewModel.editLinkUiState.collectAsState()
+
+    // Effect to handle edit state changes
+    LaunchedEffect(editLinkUiState) {
+        when (editLinkUiState) {
+            is EditLinkUiState.Success -> {
+                isEditing = false
+                viewModel.resetEditState()
+            }
+            else -> { /* No action needed */ }
+        }
+    }
+
     val dismissState = rememberSwipeToDismissBoxState(
         positionalThreshold = { distance -> distance * 0.5f },
         confirmValueChange = { dismissValue ->
@@ -326,82 +346,160 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                    .padding(horizontal = 16.dp)
+                    .clickable(enabled = !isEditing) { isEditing = true },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                 ),
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
+                if (isEditing) {
+                    // Edit mode UI
                     Column(
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 16.dp),
+                            .fillMaxWidth()
+                            .padding(16.dp),
                     ) {
-                        Text(
-                            text = link.name ?: "Untitled",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = link.uri.toString(),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
+                        // Error message
+                        if (editLinkUiState is EditLinkUiState.Error) {
                             Text(
-                                text = if (link.visited) "Viewed" else "Unviewed",
-                                fontSize = 10.sp,
-                                color = if (link.visited) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.tertiary
-                                },
-                                fontWeight = FontWeight.Bold,
+                                text = (editLinkUiState as EditLinkUiState.Error).message,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(bottom = 8.dp),
+                                fontSize = 12.sp,
                             )
                         }
+
+                        // Name field
+                        OutlinedTextField(
+                            value = editName,
+                            onValueChange = { editName = it },
+                            label = { Text("Name") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            colors = TextFieldDefaults.colors(),
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // URL field
+                        OutlinedTextField(
+                            value = editUrl,
+                            onValueChange = { editUrl = it },
+                            label = { Text("URL") },
+                            modifier = Modifier.fillMaxWidth(),
+                            singleLine = true,
+                            colors = TextFieldDefaults.colors(),
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Action buttons
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    isEditing = false
+                                    editName = link.name ?: ""
+                                    editUrl = link.uri.toString()
+                                    viewModel.resetEditState()
+                                },
+                            ) {
+                                Text("Cancel")
+                            }
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Button(
+                                onClick = { viewModel.editLink(link, editName, editUrl) },
+                                enabled = editLinkUiState !is EditLinkUiState.Loading,
+                            ) {
+                                if (editLinkUiState is EditLinkUiState.Loading) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(24.dp),
+                                        color = MaterialTheme.colorScheme.onPrimary,
+                                    )
+                                } else {
+                                    Text("Save")
+                                }
+                            }
+                        }
                     }
+                } else {
+                    // View mode UI
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Icon(
-                            imageVector = Icons.Filled.Share,
-                            contentDescription = "Share link",
+                        Column(
                             modifier = Modifier
-                                .size(24.dp)
-                                .clickable {
-                                    val sendIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_TEXT, link.uri.toString())
-                                        type = "text/plain"
-                                    }
-                                    context.startActivity(Intent.createChooser(sendIntent, null))
-                                },
-                        )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ExitToApp,
-                            contentDescription = "Open in browser",
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable {
-                                    // Mark the link as visited
-                                    viewModel.markLinkAsVisited(link)
-                                    // Open the link in browser
-                                    val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
-                                    context.startActivity(intent)
-                                },
-                        )
+                                .weight(1f)
+                                .padding(end = 16.dp),
+                        ) {
+                            Text(
+                                text = link.name ?: "Untitled",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = link.uri.toString(),
+                                fontSize = 12.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = if (link.visited) "Viewed" else "Unviewed",
+                                    fontSize = 10.sp,
+                                    color = if (link.visited) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.tertiary
+                                    },
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
+                        }
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Share,
+                                contentDescription = "Share link",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        val sendIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(Intent.EXTRA_TEXT, link.uri.toString())
+                                            type = "text/plain"
+                                        }
+                                        context.startActivity(Intent.createChooser(sendIntent, null))
+                                    },
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                contentDescription = "Open in browser",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        // Mark the link as visited
+                                        viewModel.markLinkAsVisited(link)
+                                        // Open the link in browser
+                                        val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
+                                        context.startActivity(intent)
+                                    },
+                            )
+                        }
                     }
                 }
             }

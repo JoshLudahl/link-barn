@@ -24,5 +24,7 @@ class LinkDataRepository @Inject constructor(
         linkDao.updateLink(updatedLink)
     }
 
+    suspend fun updateLink(link: Link) = linkDao.updateLink(link)
+
     suspend fun deleteLink(id: String) = linkDao.deleteLinkById(id)
 }
