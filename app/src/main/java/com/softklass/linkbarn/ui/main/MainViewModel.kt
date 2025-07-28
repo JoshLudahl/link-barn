@@ -9,8 +9,6 @@ import com.softklass.linkbarn.data.repository.CategoryRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.net.URI
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,6 +18,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.net.URI
+import javax.inject.Inject
 
 enum class LinkFilter {
     ALL,
@@ -68,22 +68,24 @@ class MainViewModel @Inject constructor(
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val links: StateFlow<List<Link>> = _currentFilter.flatMapLatest { filter ->
+    val links: StateFlow<List<Link>> = kotlinx.coroutines.flow.combine(
+        _currentFilter,
+        _selectedCategoryIds,
+    ) { filter, selectedCategoryIds ->
         when (filter) {
             LinkFilter.ALL -> linkRepository.getAllLinks()
             LinkFilter.VISITED -> linkRepository.getVisitedLinks()
             LinkFilter.UNVISITED -> linkRepository.getUnvisitedLinks()
             LinkFilter.CATEGORY -> {
-                val categoryIds = _selectedCategoryIds.value
-                if (categoryIds.isNotEmpty()) {
-                    linkRepository.getLinksByCategories(categoryIds)
+                if (selectedCategoryIds.isNotEmpty()) {
+                    linkRepository.getLinksByCategories(selectedCategoryIds)
                 } else {
                     // Return empty list when no categories are selected
                     kotlinx.coroutines.flow.flowOf(emptyList())
                 }
             }
         }
-    }.stateIn(
+    }.flatMapLatest { it }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
@@ -198,8 +200,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    suspend fun getCategoryName(categoryId: String): String? = categoryRepository.getCategoryById(categoryId)?.name
-
     suspend fun getCategoriesForLink(link: Link): List<Category> = link.categoryIds.mapNotNull { categoryId ->
         categoryRepository.getCategoryById(categoryId)
     }
@@ -221,6 +221,8 @@ class MainViewModel @Inject constructor(
 
                 val newCategory = Category(name = name.trim())
                 categoryRepository.insertCategory(newCategory)
+                // Automatically select the newly created category
+                selectCategory(newCategory)
                 _categoryUiState.value = CategoryUiState.Success
             } catch (e: Exception) {
                 Log.e("MainViewModel", "Error adding category", e)
@@ -269,8 +271,13 @@ class MainViewModel @Inject constructor(
             }
 
             _selectedCategoryIds.value = currentSelection
-            // Always set to CATEGORY filter even when empty to ensure list updates
-            _currentFilter.value = LinkFilter.CATEGORY
+
+            // If no categories are selected after update, switch back to ALL filter
+            if (currentSelection.isEmpty()) {
+                _currentFilter.value = LinkFilter.ALL
+            } else {
+                _currentFilter.value = LinkFilter.CATEGORY
+            }
         }
     }
 

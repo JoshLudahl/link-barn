@@ -192,7 +192,9 @@ fun MainScreen(
                                     index = 0,
                                     count = 3,
                                 ),
-                                label = { Text("All") },
+                                label = {
+                                    Text("All")
+                                },
                             )
 
                             // Unviewed button
@@ -204,7 +206,9 @@ fun MainScreen(
                                     index = 1,
                                     count = 3,
                                 ),
-                                label = { Text("Unviewed") },
+                                label = {
+                                    Text("Unviewed")
+                                },
                             )
 
                             // Viewed button
@@ -216,7 +220,9 @@ fun MainScreen(
                                     index = 2,
                                     count = 3,
                                 ),
-                                label = { Text("Viewed") },
+                                label = {
+                                    Text("Viewed")
+                                },
                             )
                         }
                     }
@@ -319,7 +325,7 @@ fun MainScreen(
                                             modifier = Modifier
                                                 .size(200.dp)
                                                 .padding(16.dp),
-                                            painter = androidx.compose.ui.res.painterResource(id = R.drawable.ic_empty_state),
+                                            painter = painterResource(id = R.drawable.ic_empty_state),
                                             contentDescription = "No links",
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                                         )
@@ -444,9 +450,18 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             .padding(16.dp),
                     ) {
                         // Error message
+                        var localErrorMessage by remember { mutableStateOf<String?>(null) }
+
                         if (editLinkUiState is EditLinkUiState.Error) {
                             Text(
                                 text = (editLinkUiState as EditLinkUiState.Error).message,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(bottom = 8.dp),
+                                fontSize = 12.sp,
+                            )
+                        } else if (localErrorMessage != null) {
+                            Text(
+                                text = localErrorMessage!!,
                                 color = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.padding(bottom = 8.dp),
                                 fontSize = 12.sp,
@@ -478,60 +493,71 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // Categories field
-                        var editCategoriesText by rememberSaveable(link.id) { mutableStateOf("") }
                         val categories = remember(link.id) { mutableStateOf<List<Category>>(emptyList()) }
+                        var showEditCategoryDialog by remember { mutableStateOf(false) }
 
                         LaunchedEffect(link.categoryIds) {
                             categories.value = viewModel.getCategoriesForLink(link)
-                            if (editCategoriesText.isEmpty()) {
-                                editCategoriesText = categories.value.joinToString(", ") { it.name }
+                            // Initialize selected categories with the link's current categories
+                            viewModel.clearSelectedCategories()
+                            categories.value.forEach { category ->
+                                viewModel.selectCategory(category)
                             }
                         }
 
-                        OutlinedTextField(
-                            value = editCategoriesText,
-                            onValueChange = { editCategoriesText = it },
-                            label = { Text("Categories (comma separated)") },
-                            placeholder = { Text("e.g. Work, Personal, Shopping") },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = TextFieldDefaults.colors(),
+                        // Show category creation dialog
+                        CategoryDialog(
+                            viewModel = viewModel,
+                            showDialog = showEditCategoryDialog,
+                            onDismiss = { showEditCategoryDialog = false },
                         )
 
-                        // Show existing categories as chips for quick selection
-                        val allCategories by viewModel.allCategories.collectAsState()
-                        if (allCategories.isNotEmpty()) {
-                            Text(
-                                text = "Add Category:",
-                                style = MaterialTheme.typography.labelMedium,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 8.dp, bottom = 4.dp),
-                            )
+                        // Categories section
+                        Text(
+                            text = "Categories".uppercase(),
+                            style = MaterialTheme.typography.labelMedium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp, bottom = 4.dp),
+                        )
 
-                            Row(
+                        // Show all categories as filter chips
+                        val allCategories by viewModel.allCategories.collectAsState()
+                        val selectedCategories by viewModel.selectedCategories.collectAsState()
+
+                        if (allCategories.isNotEmpty()) {
+                            LazyRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(bottom = 8.dp),
-                                horizontalArrangement = Arrangement.Start,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
-                                allCategories.take(5).forEach { category ->
-                                    androidx.compose.material3.AssistChip(
+                                items(allCategories) { category ->
+                                    val isSelected = selectedCategories.contains(category)
+                                    androidx.compose.material3.FilterChip(
+                                        selected = isSelected,
                                         onClick = {
-                                            val currentCategories = editCategoriesText.split(",")
-                                                .map { it.trim() }
-                                                .filter { it.isNotEmpty() }
-                                                .toMutableList()
-
-                                            if (!currentCategories.contains(category.name)) {
-                                                currentCategories.add(category.name)
-                                                editCategoriesText = currentCategories.joinToString(", ")
+                                            if (isSelected) {
+                                                viewModel.unselectCategory(category)
+                                            } else {
+                                                viewModel.selectCategory(category)
                                             }
                                         },
                                         label = { Text(category.name) },
-                                        modifier = Modifier.padding(end = 8.dp),
                                     )
                                 }
                             }
+                        }
+
+                        // Button to create a new category
+                        Button(
+                            onClick = { showEditCategoryDialog = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.secondary,
+                            ),
+                        ) {
+                            Text("Create New Category")
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -556,10 +582,14 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
 
                             Button(
                                 onClick = {
-                                    val categoryNames = editCategoriesText.split(",")
-                                        .map { it.trim() }
-                                        .filter { it.isNotEmpty() }
-                                    viewModel.editLink(link, editName, editUrl, categoryNames)
+                                    if (selectedCategories.isEmpty()) {
+                                        // Show error if no categories selected
+                                        localErrorMessage = "Please select at least one category"
+                                    } else {
+                                        localErrorMessage = null
+                                        val categoryNames = selectedCategories.map { it.name }
+                                        viewModel.editLink(link, editName, editUrl, categoryNames)
+                                    }
                                 },
                                 enabled = editLinkUiState !is EditLinkUiState.Loading,
                             ) {
@@ -588,12 +618,27 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                 .weight(1f)
                                 .padding(end = 16.dp),
                         ) {
-                            Text(
-                                text = link.name ?: "Untitled",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text = link.name ?: "Untitled",
+                                    fontSize = 18.sp,
+                                    fontWeight = if (link.visited) FontWeight.Normal else FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                )
+                                Text(
+                                    text = if (link.visited) "Viewed" else "Unviewed",
+                                    fontSize = 10.sp,
+                                    color = if (link.visited) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.tertiary
+                                    },
+                                    fontWeight = FontWeight.Normal,
+                                    modifier = Modifier.padding(start = 8.dp),
+                                )
+                            }
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = link.uri.toString(),
@@ -653,17 +698,6 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                         Column(
                             horizontalAlignment = Alignment.End,
                         ) {
-                            Text(
-                                text = if (link.visited) "Viewed" else "Unviewed",
-                                fontSize = 10.sp,
-                                color = if (link.visited) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.tertiary
-                                },
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(end = 8.dp),
-                            )
                             Row(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.Top,
@@ -936,7 +970,7 @@ fun ModalBottomSheetAddUrl(
                 // Category Chip Group
                 if (allCategories.isNotEmpty()) {
                     Text(
-                        text = "Categories:",
+                        text = "Categories".uppercase(),
                         style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -970,6 +1004,9 @@ fun ModalBottomSheetAddUrl(
                 Button(
                     onClick = { showCategoryDialog = true },
                     modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                    ),
                 ) {
                     Text("Create New Category")
                 }
