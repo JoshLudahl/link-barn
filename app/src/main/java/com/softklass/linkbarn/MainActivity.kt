@@ -24,8 +24,8 @@ import com.softklass.linkbarn.data.preferences.SettingsPreferences
 import com.softklass.linkbarn.navigation.AppNavHost
 import com.softklass.linkbarn.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {

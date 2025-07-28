@@ -1,6 +1,7 @@
 package com.softklass.linkbarn.ui.settings
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -198,8 +201,40 @@ fun SettingsScreen(
                 }
             }
 
-            // Push the version to the bottom
+            // Push the version and review button to the bottom
             Spacer(modifier = Modifier.weight(1f))
+
+            // Add a section for app feedback
+            Text(
+                text = "Feedback",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Get the current context
+            val context = androidx.compose.ui.platform.LocalContext.current
+
+            // Add a button to leave a review
+            Button(
+                onClick = {
+                    settingsViewModel.openPlayStoreForReview(context)
+                },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Row {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Rate app",
+                        modifier = Modifier.padding(end = 8.dp),
+                    )
+                    Text("Rate this app")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Display app version at the bottom
             Text(

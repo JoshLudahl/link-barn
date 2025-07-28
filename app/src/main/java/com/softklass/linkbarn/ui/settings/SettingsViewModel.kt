@@ -1,5 +1,10 @@
 package com.softklass.linkbarn.ui.settings
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import com.softklass.linkbarn.BuildConfig
 import com.softklass.linkbarn.data.preferences.SettingsPreferences
@@ -31,4 +36,25 @@ class SettingsViewModel @Inject constructor(
     // Get the app version from BuildConfig
     val appVersion: String
         get() = BuildConfig.VERSION_NAME
+
+    // Open the Play Store to leave a review
+    fun openPlayStoreForReview(context: Context) {
+        val packageName = context.packageName
+        val uri = "market://details?id=$packageName".toUri()
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+
+        // Add flags to start a new task
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        try {
+            context.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            // If Play Store app is not available, open in browser
+            Log.e("SettingsViewModel", "Error opening Play Store: ${e.message}")
+            val webUri = "https://play.google.com/store/apps/details?id=$packageName".toUri()
+            val webIntent = Intent(Intent.ACTION_VIEW, webUri)
+            webIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(webIntent)
+        }
+    }
 }

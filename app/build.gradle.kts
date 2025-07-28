@@ -112,6 +112,8 @@ tasks.named("preBuild") {
 dependencies {
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.app.update.ktx)
+    implementation(libs.play.review.ktx)
+    implementation(libs.kotlinx.coroutines.play.services)
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.androidx.core.ktx)
