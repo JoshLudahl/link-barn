@@ -10,6 +10,7 @@
 ## Project Structure
 The project follows a clean architecture approach with the following main components:
 * Follow MVVM architecture pattern
+* Write clean code, follow the SOLID principles, and adhere to the Clean Architecture principles
 
 ### Data Layer
 * `data/db`: Contains Room database implementation, DAOs, and converters
