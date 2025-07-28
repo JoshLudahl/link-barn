@@ -73,6 +73,15 @@ android {
 
 kotlin {
     jvmToolchain(21)
+
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+        compilerOptions {
+            freeCompilerArgs.addAll(
+                "-Xsuppress-deprecated-jvm-target-warning",
+                "-Xdeprecation-warnings=disable",
+            )
+        }
+    }
 }
 
 ktlint {
