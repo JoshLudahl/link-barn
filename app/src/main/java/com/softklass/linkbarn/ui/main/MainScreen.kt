@@ -1,17 +1,13 @@
 package com.softklass.linkbarn.ui.main
 
 import android.content.Intent
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,19 +20,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroup
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -62,11 +55,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -80,7 +72,7 @@ import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
@@ -110,7 +102,7 @@ fun MainScreen(
                 actions = {
                     IconButton(onClick = { onNavigateToSettings() }) {
                         Icon(
-                            imageVector = Icons.Default.Settings,
+                            painter = painterResource(R.drawable.ic_settings),
                             contentDescription = "Settings",
                             tint = MaterialTheme.colorScheme.onSurface,
                             // modifier = Modifier.size(24.dp),
@@ -124,7 +116,7 @@ fun MainScreen(
                         shape = RoundedCornerShape(16.dp),
                     ) {
                         Icon(
-                            imageVector = Icons.Rounded.Add,
+                            painter = painterResource(R.drawable.ic_add),
                             contentDescription = "Add Link",
                             tint = MaterialTheme.colorScheme.onPrimary,
                         )
@@ -174,120 +166,91 @@ fun MainScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    // All button
+                    val numButtons = 3
+                    ButtonGroup(
+                        overflowIndicator = { menuState ->
+                            FilledIconButton(
+                                onClick = {
+                                    if (menuState.isExpanded) {
+                                        menuState.dismiss()
+                                    } else {
+                                        menuState.show()
+                                    }
+                                },
+                            ) {
+                                Icon(
+                                    painterResource(R.drawable.ic_more_vert),
+                                    contentDescription = "Localized description",
+                                )
+                            }
+                        },
+                    ) {
+
+                    }
+
                     // All button
                     Button(
                         onClick = { viewModel.setFilter(LinkFilter.ALL) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        shape = RoundedCornerShape(
-                            topStart = 16.dp,
-                            bottomStart = 16.dp,
-                            topEnd = 0.dp,
-                            bottomEnd = 0.dp,
-                        ),
+                        modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (currentFilter == LinkFilter.ALL) {
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.surfaceContainerHigh
+                                MaterialTheme.colorScheme.surfaceVariant
                             },
                             contentColor = if (currentFilter == LinkFilter.ALL) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                                MaterialTheme.colorScheme.onPrimary
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             },
                         ),
-                        contentPadding = PaddingValues(0.dp),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
+                        shape = RoundedCornerShape(16.dp),
                     ) {
                         Text("All")
                     }
 
-                    // Vertical divider
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.outlineVariant),
-                    )
-
                     // Unviewed button
                     Button(
                         onClick = { viewModel.setFilter(LinkFilter.UNVISITED) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        shape = RectangleShape,
+                        modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (currentFilter == LinkFilter.UNVISITED) {
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.surfaceContainerHigh
+                                MaterialTheme.colorScheme.surfaceVariant
                             },
                             contentColor = if (currentFilter == LinkFilter.UNVISITED) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                                MaterialTheme.colorScheme.onPrimary
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             },
                         ),
-                        contentPadding = PaddingValues(0.dp),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
+                        shape = RoundedCornerShape(16.dp),
                     ) {
                         Text("Unviewed")
                     }
 
-                    // Vertical divider
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.outlineVariant),
-                    )
-
                     // Viewed button
                     Button(
                         onClick = { viewModel.setFilter(LinkFilter.VISITED) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        shape = RoundedCornerShape(
-                            topStart = 0.dp,
-                            bottomStart = 0.dp,
-                            topEnd = 16.dp,
-                            bottomEnd = 16.dp,
-                        ),
+                        modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = if (currentFilter == LinkFilter.VISITED) {
-                                MaterialTheme.colorScheme.primaryContainer
+                                MaterialTheme.colorScheme.primary
                             } else {
-                                MaterialTheme.colorScheme.surfaceContainerHigh
+                                MaterialTheme.colorScheme.surfaceVariant
                             },
                             contentColor = if (currentFilter == LinkFilter.VISITED) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
+                                MaterialTheme.colorScheme.onPrimary
                             } else {
                                 MaterialTheme.colorScheme.onSurfaceVariant
                             },
                         ),
-                        contentPadding = PaddingValues(0.dp),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
+                        shape = RoundedCornerShape(16.dp),
                     ) {
                         Text("Viewed")
                     }
@@ -403,7 +366,7 @@ fun MainScreen(
                                             modifier = Modifier.padding(horizontal = 16.dp),
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Rounded.Add,
+                                                painterResource(R.drawable.ic_add),
                                                 contentDescription = "Add Link",
                                                 tint = MaterialTheme.colorScheme.onPrimary,
                                                 modifier = Modifier.size(20.dp),
@@ -491,7 +454,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Delete,
+                    painterResource(R.drawable.ic_delete),
                     contentDescription = "Delete",
                     tint = MaterialTheme.colorScheme.error,
                 )
@@ -736,7 +699,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Share,
+                                painterResource(R.drawable.ic_share),
                                 contentDescription = "Share link",
                                 modifier = Modifier
                                     .size(24.dp)
@@ -750,7 +713,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                     },
                             )
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                                painterResource(R.drawable.open_in_browser_24px),
                                 contentDescription = "Open in browser",
                                 modifier = Modifier
                                     .size(24.dp)

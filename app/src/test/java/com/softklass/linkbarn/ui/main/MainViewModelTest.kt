@@ -1,25 +1,38 @@
 package com.softklass.linkbarn.ui.main
 
+import com.softklass.linkbarn.MainCoroutineRule
 import com.softklass.linkbarn.data.model.Link
+import com.softklass.linkbarn.data.repository.CategoryRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 
 @ExperimentalCoroutinesApi
 class MainViewModelTest {
+    @get:Rule
+    val mainCoroutineRule = MainCoroutineRule()
+
+    private val testDispatcher = UnconfinedTestDispatcher()
     private val linkDataRepository: LinkDataRepository = mock()
+    private val categoryRepository: CategoryRepository = mock()
     private lateinit var viewModel: MainViewModel
 
     @Before
     fun setup() {
-        viewModel = MainViewModel(linkDataRepository)
+        viewModel = MainViewModel(
+            linkDataRepository,
+            categoryRepository = categoryRepository,
+            dispatcher = testDispatcher,
+        )
     }
 
     @Test

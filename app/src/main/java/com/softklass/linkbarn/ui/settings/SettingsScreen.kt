@@ -14,9 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -37,10 +34,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.softklass.linkbarn.R
 import com.softklass.linkbarn.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
 
@@ -81,7 +80,7 @@ fun SettingsScreen(
                         enabled = isBackButtonEnabled,
                     ) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            painter = painterResource(R.drawable.ic_arrow_back),
                             contentDescription = "Back",
                         )
                     }
@@ -394,7 +393,7 @@ fun SettingsScreen(
             ) {
                 Row {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        painter = painterResource(R.drawable.ic_star),
                         contentDescription = "Rate app",
                         modifier = Modifier.padding(end = 8.dp),
                     )
