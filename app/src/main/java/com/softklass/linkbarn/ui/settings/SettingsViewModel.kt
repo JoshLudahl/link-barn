@@ -1,6 +1,7 @@
 package com.softklass.linkbarn.ui.settings
 
 import androidx.lifecycle.ViewModel
+import com.softklass.linkbarn.BuildConfig
 import com.softklass.linkbarn.data.preferences.SettingsPreferences
 import com.softklass.linkbarn.ui.theme.ThemeMode
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -27,11 +28,7 @@ class SettingsViewModel @Inject constructor(
         settingsPreferences.setThemeMode(mode)
     }
 
-    // Expose the dark theme preference as a Flow (for backward compatibility)
-    val darkThemeEnabled = settingsPreferences.darkThemeEnabled
-
-    // Update the dark theme preference (for backward compatibility)
-    suspend fun setDarkThemeEnabled(enabled: Boolean) {
-        settingsPreferences.setDarkThemeEnabled(enabled)
-    }
+    // Get the app version from BuildConfig
+    val appVersion: String
+        get() = BuildConfig.VERSION_NAME
 }
