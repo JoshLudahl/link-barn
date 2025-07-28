@@ -258,8 +258,7 @@ fun AppTheme(
     dynamicColor: Boolean? = null,
     settingsPreferences: SettingsPreferences? = null,
     content:
-    @Composable()
-    () -> Unit,
+    @Composable () -> Unit,
 ) {
     // Use the provided dynamicColor value, or get it from preferences, or default to true
     val dynamicColorEnabled = when {
