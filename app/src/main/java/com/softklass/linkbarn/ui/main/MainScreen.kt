@@ -275,6 +275,7 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
                 Text(
                     fontSize = 22.sp,
                     text = stringResource(id = R.string.main_screen_title),
+                    color = MaterialTheme.colorScheme.primary,
                 )
                 Text(text = "Your saved links.")
             }
