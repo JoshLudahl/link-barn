@@ -1,6 +1,9 @@
 package com.softklass.linkbarn.ui.main
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -79,6 +82,7 @@ import kotlinx.coroutines.launch
 fun MainScreen(
     viewModel: MainViewModel,
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToCategories: () -> Unit = {},
 ) {
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
@@ -108,6 +112,14 @@ fun MainScreen(
                             contentDescription = "Settings",
                             tint = MaterialTheme.colorScheme.onSurface,
                             // modifier = Modifier.size(24.dp),
+                        )
+                    }
+
+                    IconButton(onClick = { onNavigateToCategories() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_category),
+                            contentDescription = "Categories",
+                            tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
                 },
@@ -392,7 +404,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
     }
 
     val dismissState = rememberSwipeToDismissBoxState(
-        positionalThreshold = { distance -> distance * 0.5f },
+        initialValue = SwipeToDismissBoxValue.Settled,
         confirmValueChange = { dismissValue ->
             if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
                 viewModel.deleteLink(link)
@@ -401,6 +413,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                 false
             }
         },
+        positionalThreshold = { distance -> distance * 0.01f },
     )
 
     // Reset the dismiss state after a short delay when the current value is not Settled
@@ -432,310 +445,309 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                 )
             }
         },
-        content = {
-            ElevatedCard(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .clickable(enabled = !isEditing) { isEditing = true },
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                ),
-            ) {
-                if (isEditing) {
-                    // Edit mode UI
-                    Column(
+    ) {
+        ElevatedCard(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clickable(enabled = !isEditing) { isEditing = true },
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            ),
+        ) {
+            if (isEditing) {
+                // Edit mode UI
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                ) {
+                    // Error message
+                    var localErrorMessage by remember { mutableStateOf<String?>(null) }
+
+                    if (editLinkUiState is EditLinkUiState.Error) {
+                        Text(
+                            text = (editLinkUiState as EditLinkUiState.Error).message,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            fontSize = 12.sp,
+                        )
+                    } else if (localErrorMessage != null) {
+                        Text(
+                            text = localErrorMessage!!,
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.padding(bottom = 8.dp),
+                            fontSize = 12.sp,
+                        )
+                    }
+
+                    // Name field
+                    OutlinedTextField(
+                        value = editName,
+                        onValueChange = { editName = it },
+                        label = { Text("Name") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(),
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // URL field
+                    OutlinedTextField(
+                        value = editUrl,
+                        onValueChange = { editUrl = it },
+                        label = { Text("URL") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(),
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Categories field
+                    val categories = remember(link.id) { mutableStateOf<List<Category>>(emptyList()) }
+                    var showEditCategoryDialog by remember { mutableStateOf(false) }
+
+                    LaunchedEffect(link.categoryIds) {
+                        categories.value = viewModel.getCategoriesForLink(link)
+                        // Initialize selected categories with the link's current categories
+                        viewModel.clearSelectedCategories()
+                        categories.value.forEach { category ->
+                            viewModel.selectCategory(category)
+                        }
+                    }
+
+                    // Show category creation dialog
+                    CategoryDialog(
+                        viewModel = viewModel,
+                        showDialog = showEditCategoryDialog,
+                        onDismiss = { showEditCategoryDialog = false },
+                    )
+
+                    // Categories section
+                    Text(
+                        text = "Categories".uppercase(),
+                        style = MaterialTheme.typography.labelMedium,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                    ) {
-                        // Error message
-                        var localErrorMessage by remember { mutableStateOf<String?>(null) }
+                            .padding(top = 8.dp, bottom = 4.dp),
+                    )
 
-                        if (editLinkUiState is EditLinkUiState.Error) {
-                            Text(
-                                text = (editLinkUiState as EditLinkUiState.Error).message,
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(bottom = 8.dp),
-                                fontSize = 12.sp,
-                            )
-                        } else if (localErrorMessage != null) {
-                            Text(
-                                text = localErrorMessage!!,
-                                color = MaterialTheme.colorScheme.error,
-                                modifier = Modifier.padding(bottom = 8.dp),
-                                fontSize = 12.sp,
-                            )
-                        }
+                    // Show all categories as filter chips
+                    val allCategories by viewModel.allCategories.collectAsState()
+                    val selectedCategories by viewModel.selectedCategories.collectAsState()
 
-                        // Name field
-                        OutlinedTextField(
-                            value = editName,
-                            onValueChange = { editName = it },
-                            label = { Text("Name") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(),
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // URL field
-                        OutlinedTextField(
-                            value = editUrl,
-                            onValueChange = { editUrl = it },
-                            label = { Text("URL") },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            colors = TextFieldDefaults.colors(),
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Categories field
-                        val categories = remember(link.id) { mutableStateOf<List<Category>>(emptyList()) }
-                        var showEditCategoryDialog by remember { mutableStateOf(false) }
-
-                        LaunchedEffect(link.categoryIds) {
-                            categories.value = viewModel.getCategoriesForLink(link)
-                            // Initialize selected categories with the link's current categories
-                            viewModel.clearSelectedCategories()
-                            categories.value.forEach { category ->
-                                viewModel.selectCategory(category)
-                            }
-                        }
-
-                        // Show category creation dialog
-                        CategoryDialog(
-                            viewModel = viewModel,
-                            showDialog = showEditCategoryDialog,
-                            onDismiss = { showEditCategoryDialog = false },
-                        )
-
-                        // Categories section
-                        Text(
-                            text = "Categories".uppercase(),
-                            style = MaterialTheme.typography.labelMedium,
+                    if (allCategories.isNotEmpty()) {
+                        LazyRow(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 8.dp, bottom = 4.dp),
-                        )
-
-                        // Show all categories as filter chips
-                        val allCategories by viewModel.allCategories.collectAsState()
-                        val selectedCategories by viewModel.selectedCategories.collectAsState()
-
-                        if (allCategories.isNotEmpty()) {
-                            LazyRow(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 8.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            ) {
-                                items(allCategories) { category ->
-                                    val isSelected = selectedCategories.contains(category)
-                                    androidx.compose.material3.FilterChip(
-                                        selected = isSelected,
-                                        onClick = {
-                                            if (isSelected) {
-                                                viewModel.unselectCategory(category)
-                                            } else {
-                                                viewModel.selectCategory(category)
-                                            }
-                                        },
-                                        label = { Text(category.name) },
-                                    )
-                                }
-                            }
-                        }
-
-                        // Button to create a new category
-                        Button(
-                            onClick = { showEditCategoryDialog = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.secondary,
-                            ),
+                                .padding(bottom = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
-                            Text("Create New Category")
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Action buttons
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.End,
-                        ) {
-                            TextButton(
-                                onClick = {
-                                    isEditing = false
-                                    editName = link.name ?: ""
-                                    editUrl = link.uri.toString()
-                                    viewModel.resetEditState()
-                                },
-                            ) {
-                                Text("Cancel")
-                            }
-
-                            Spacer(modifier = Modifier.width(8.dp))
-
-                            Button(
-                                onClick = {
-                                    if (selectedCategories.isEmpty()) {
-                                        // Show error if no categories selected
-                                        localErrorMessage = "Please select at least one category"
-                                    } else {
-                                        localErrorMessage = null
-                                        val categoryNames = selectedCategories.map { it.name }
-                                        viewModel.editLink(link, editName, editUrl, categoryNames)
-                                    }
-                                },
-                                enabled = editLinkUiState !is EditLinkUiState.Loading,
-                            ) {
-                                if (editLinkUiState is EditLinkUiState.Loading) {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(24.dp),
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                    )
-                                } else {
-                                    Text("Save")
-                                }
+                            items(allCategories) { category ->
+                                val isSelected = selectedCategories.contains(category)
+                                androidx.compose.material3.FilterChip(
+                                    selected = isSelected,
+                                    onClick = {
+                                        if (isSelected) {
+                                            viewModel.unselectCategory(category)
+                                        } else {
+                                            viewModel.selectCategory(category)
+                                        }
+                                    },
+                                    label = { Text(category.name) },
+                                )
                             }
                         }
                     }
-                } else {
-                    // View mode UI
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+
+                    // Button to create a new category
+                    Button(
+                        onClick = { showEditCategoryDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.secondary,
+                        ),
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(end = 16.dp),
+                        Text("Create New Category")
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Action buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                    ) {
+                        TextButton(
+                            onClick = {
+                                isEditing = false
+                                editName = link.name ?: ""
+                                editUrl = link.uri.toString()
+                                viewModel.resetEditState()
+                            },
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                Text(
-                                    text = link.name ?: "Untitled",
-                                    fontSize = 18.sp,
-                                    fontWeight = if (link.visited) FontWeight.Normal else FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                )
-                                Text(
-                                    text = if (link.visited) "Viewed" else "Unviewed",
-                                    fontSize = 10.sp,
-                                    color = if (link.visited) {
-                                        MaterialTheme.colorScheme.primary
-                                    } else {
-                                        MaterialTheme.colorScheme.tertiary
-                                    },
-                                    fontWeight = FontWeight.Normal,
-                                    modifier = Modifier.padding(start = 8.dp),
-                                )
-                            }
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = link.uri.toString(),
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            ) {
-                                // Display categories if any
-                                if (link.categoryIds.isNotEmpty()) {
-                                    val categories = remember(link.categoryIds) {
-                                        mutableStateOf<List<Category>>(emptyList())
-                                    }
-
-                                    // Load categories for this link
-                                    LaunchedEffect(link.categoryIds) {
-                                        categories.value = viewModel.getCategoriesForLink(link)
-                                    }
-
-                                    // Use a Row to display category chips
-                                    Row(
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                        modifier = Modifier.padding(top = 4.dp),
-                                    ) {
-                                        categories.value.take(3).forEach { category ->
-
-                                            ElevatedAssistChip(
-                                                onClick = { },
-                                                label = {
-                                                    Text(
-                                                        text = category.name,
-                                                        fontSize = 10.sp,
-                                                    )
-                                                },
-                                                modifier = Modifier.height(24.dp),
-                                            )
-                                        }
-
-                                        // Show count of additional categories if there are more than 3
-                                        if (categories.value.size > 3) {
-                                            Text(
-                                                text = "+${categories.value.size - 3} more",
-                                                fontSize = 10.sp,
-                                                color = MaterialTheme.colorScheme.primary,
-                                                modifier = Modifier.padding(start = 4.dp),
-                                            )
-                                        }
-                                    }
-                                }
-                            }
+                            Text("Cancel")
                         }
-                        Column(
-                            horizontalAlignment = Alignment.End,
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Button(
+                            onClick = {
+                                if (selectedCategories.isEmpty()) {
+                                    // Show error if no categories selected
+                                    localErrorMessage = "Please select at least one category"
+                                } else {
+                                    localErrorMessage = null
+                                    val categoryNames = selectedCategories.map { it.name }
+                                    viewModel.editLink(link, editName, editUrl, categoryNames)
+                                }
+                            },
+                            enabled = editLinkUiState !is EditLinkUiState.Loading,
                         ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.Top,
-                            ) {
-                                Icon(
-                                    painterResource(R.drawable.ic_share),
-                                    contentDescription = "Share link",
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clickable {
-                                            val sendIntent = Intent().apply {
-                                                action = Intent.ACTION_SEND
-                                                putExtra(Intent.EXTRA_TEXT, link.uri.toString())
-                                                type = "text/plain"
-                                            }
-                                            context.startActivity(Intent.createChooser(sendIntent, null))
-                                        },
+                            if (editLinkUiState is EditLinkUiState.Loading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    color = MaterialTheme.colorScheme.onPrimary,
                                 )
-                                Icon(
-                                    painterResource(R.drawable.open_in_browser_24px),
-                                    contentDescription = "Open in browser",
-                                    modifier = Modifier
-                                        .size(24.dp)
-                                        .clickable {
-                                            // Mark the link as visited
-                                            viewModel.markLinkAsVisited(link)
-                                            // Open the link in browser
-                                            val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
-                                            context.startActivity(intent)
-                                        },
-                                )
+                            } else {
+                                Text("Save")
                             }
                         }
                     }
                 }
+            } else {
+                // View mode UI
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 16.dp),
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                text = link.name ?: "Untitled",
+                                fontSize = 18.sp,
+                                fontWeight = if (link.visited) FontWeight.Normal else FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                            Text(
+                                text = if (link.visited) "Viewed" else "Unviewed",
+                                fontSize = 10.sp,
+                                color = if (link.visited) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.tertiary
+                                },
+                                fontWeight = FontWeight.Normal,
+                                modifier = Modifier.padding(start = 8.dp),
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = link.uri.toString(),
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        ) {
+                            // Display categories if any
+                            if (link.categoryIds.isNotEmpty()) {
+                                val categories = remember(link.categoryIds) {
+                                    mutableStateOf<List<Category>>(emptyList())
+                                }
+
+                                // Load categories for this link
+                                LaunchedEffect(link.categoryIds) {
+                                    categories.value = viewModel.getCategoriesForLink(link)
+                                }
+
+                                // Use a Row to display category chips
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.padding(top = 4.dp),
+                                ) {
+                                    categories.value.take(3).forEach { category ->
+
+                                        ElevatedAssistChip(
+                                            onClick = { },
+                                            label = {
+                                                Text(
+                                                    text = category.name,
+                                                    fontSize = 10.sp,
+                                                )
+                                            },
+                                            modifier = Modifier.height(24.dp),
+                                        )
+                                    }
+
+                                    // Show count of additional categories if there are more than 3
+                                    if (categories.value.size > 3) {
+                                        Text(
+                                            text = "+${categories.value.size - 3} more",
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.padding(start = 4.dp),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.End,
+                    ) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.Top,
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.ic_share),
+                                contentDescription = "Share link",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        val sendIntent = Intent().apply {
+                                            action = Intent.ACTION_SEND
+                                            putExtra(Intent.EXTRA_TEXT, link.uri.toString())
+                                            type = "text/plain"
+                                        }
+                                        context.startActivity(Intent.createChooser(sendIntent, null))
+                                    },
+                            )
+                            Icon(
+                                painterResource(R.drawable.open_in_browser_24px),
+                                contentDescription = "Open in browser",
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .clickable {
+                                        // Mark the link as visited
+                                        viewModel.markLinkAsVisited(link)
+                                        // Open the link in browser
+                                        val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
+                                        context.startActivity(intent)
+                                    },
+                            )
+                        }
+                    }
+                }
             }
-        },
-    )
+        }
+    }
 }
 
 @Composable
@@ -789,6 +801,12 @@ fun CategoryDialog(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         isError = errorMessage != null,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                viewModel.addCategory(categoryName)
+                            },
+                        ),
                     )
                 }
             },

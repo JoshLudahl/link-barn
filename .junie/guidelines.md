@@ -6,6 +6,7 @@
 * Follow the existing project architecture and patterns when adding new features.
 * Write unit tests for all new functionality.
 * Update documentation when making significant changes.
+* Do not use deprecated methods.
 
 ## Project Structure
 The project follows a clean architecture approach with the following main components:
