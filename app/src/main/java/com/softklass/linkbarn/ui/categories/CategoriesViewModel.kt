@@ -1,5 +1,6 @@
 package com.softklass.linkbarn.ui.categories
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.softklass.linkbarn.data.model.Category
@@ -8,6 +9,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +26,17 @@ class CategoriesViewModel @Inject constructor(
     private val _categoryUiState = MutableStateFlow<CategoryUiState>(CategoryUiState.Initial)
     val categoryUiState: StateFlow<CategoryUiState> = _categoryUiState.asStateFlow()
 
-    val allCategories = categoryRepository.getAllCategories()
+    private val _snackbarState = MutableStateFlow<SnackbarState>(SnackbarState.Hidden)
+    val snackbarState: StateFlow<SnackbarState> = _snackbarState.asStateFlow()
+
+    private val _pendingDeletions = MutableStateFlow<Set<String>>(emptySet())
+    val pendingDeletions: StateFlow<Set<String>> = _pendingDeletions.asStateFlow()
+
+    private var deletedCategory: Category? = null
+    private var deleteJob: Job? = null
+
+    private val _allCategories = categoryRepository.getAllCategories()
+    val allCategories: Flow<List<Category>> = _allCategories
 
     fun addCategory(name: String) {
         if (name.isBlank()) {
@@ -73,13 +87,49 @@ class CategoriesViewModel @Inject constructor(
     }
 
     fun deleteCategory(category: Category) {
-        viewModelScope.launch(dispatcher) {
+        // Cancel any existing delete job
+        deleteJob?.cancel()
+
+        // Store the deleted category for potential undo
+        deletedCategory = category
+
+        // Add category to pending deletions to hide it from UI
+        _pendingDeletions.value = _pendingDeletions.value + category.id
+
+        // Show snackbar with undo option
+        _snackbarState.value = SnackbarState.Visible(
+            message = "Category deleted",
+            categoryName = category.name,
+        )
+
+        // Schedule permanent deletion after 5 seconds
+        deleteJob = viewModelScope.launch(dispatcher) {
             try {
+                delay(5000) // 5 seconds delay
                 categoryRepository.deleteCategory(category)
+                deletedCategory = null
+                _pendingDeletions.value = _pendingDeletions.value - category.id
+                _snackbarState.value = SnackbarState.Hidden
             } catch (e: Exception) {
+                Log.e("CategoriesViewModel", "Failed to delete category: ${e.message}")
                 // Handle error if needed - could add error state for delete operations
+                _pendingDeletions.value = _pendingDeletions.value - category.id
+                _snackbarState.value = SnackbarState.Hidden
             }
         }
+    }
+
+    fun undoDelete() {
+        deleteJob?.cancel()
+        deletedCategory?.let { category ->
+            _pendingDeletions.value = _pendingDeletions.value - category.id
+        }
+        deletedCategory = null
+        _snackbarState.value = SnackbarState.Hidden
+    }
+
+    fun hideSnackbar() {
+        _snackbarState.value = SnackbarState.Hidden
     }
 
     fun resetCategoryState() {
@@ -92,4 +142,9 @@ sealed class CategoryUiState {
     object Loading : CategoryUiState()
     object Success : CategoryUiState()
     data class Error(val message: String) : CategoryUiState()
+}
+
+sealed class SnackbarState {
+    object Hidden : SnackbarState()
+    data class Visible(val message: String, val categoryName: String) : SnackbarState()
 }

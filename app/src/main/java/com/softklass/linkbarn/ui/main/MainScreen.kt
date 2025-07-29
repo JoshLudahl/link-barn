@@ -35,6 +35,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -42,6 +43,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -86,6 +89,35 @@ fun MainScreen(
 ) {
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
+    // Snackbar state handling
+    val snackbarState by viewModel.snackbarState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Handle snackbar visibility
+    LaunchedEffect(snackbarState) {
+        val currentState = snackbarState
+        when (currentState) {
+            is SnackbarState.Visible -> {
+                val result = snackbarHostState.showSnackbar(
+                    message = currentState.message,
+                    actionLabel = "Undo",
+                    withDismissAction = true,
+                )
+                when (result) {
+                    androidx.compose.material3.SnackbarResult.ActionPerformed -> {
+                        viewModel.undoDelete()
+                    }
+                    androidx.compose.material3.SnackbarResult.Dismissed -> {
+                        viewModel.hideSnackbar()
+                    }
+                }
+            }
+            is SnackbarState.Hidden -> {
+                // Do nothing
+            }
+        }
+    }
+
     // Add the bottom sheet
     ModalBottomSheetAddUrl(
         openBottomSheet = openBottomSheet,
@@ -94,6 +126,9 @@ fun MainScreen(
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
         bottomBar = {
             BottomAppBar(
                 // modifier = Modifier.height(56.dp),
@@ -106,20 +141,21 @@ fun MainScreen(
                     bottom = 16.dp,
                 ),
                 actions = {
-                    IconButton(onClick = { onNavigateToSettings() }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_settings),
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                            // modifier = Modifier.size(24.dp),
-                        )
-                    }
 
                     IconButton(onClick = { onNavigateToCategories() }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_category),
                             contentDescription = "Categories",
                             tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+
+                    IconButton(onClick = { onNavigateToSettings() }) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_settings),
+                            contentDescription = "Settings",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            // modifier = Modifier.size(24.dp),
                         )
                     }
                 },
@@ -300,6 +336,7 @@ fun MainScreen(
                         .fillMaxWidth(),
                 ) {
                     val links by viewModel.links.collectAsState()
+                    val deletingLinkIds by viewModel.deletingLinkIds.collectAsState()
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -369,7 +406,15 @@ fun MainScreen(
                                 items = links,
                                 key = { link -> link.id },
                             ) { link ->
-                                LinkItem(link = link, viewModel = viewModel)
+                                AnimatedVisibility(
+                                    visible = !deletingLinkIds.contains(link.id),
+                                    exit = slideOutHorizontally(
+                                        targetOffsetX = { -it },
+                                        animationSpec = tween(300),
+                                    ),
+                                ) {
+                                    LinkItem(link = link, viewModel = viewModel)
+                                }
                             }
                         }
                     }
@@ -408,7 +453,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
         confirmValueChange = { dismissValue ->
             if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
                 viewModel.deleteLink(link)
-                true
+                false // Don't confirm the dismissal, just trigger the action
             } else {
                 false
             }
@@ -416,12 +461,11 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
         positionalThreshold = { distance -> distance * 0.01f },
     )
 
-    // Reset the dismiss state after a short delay when the current value is not Settled
-    // Include link.id as a key to ensure this effect is properly associated with each item
+    // Reset the dismiss state after the action is triggered
     LaunchedEffect(dismissState.currentValue, link.id) {
         if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
-            // Wait for the animation to complete
-            kotlinx.coroutines.delay(300)
+            // Wait for the swipe animation to complete
+            kotlinx.coroutines.delay(100)
             dismissState.reset()
         }
     }
@@ -450,7 +494,13 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .clickable(enabled = !isEditing) { isEditing = true },
+                .clickable(enabled = !isEditing) {
+                    // Mark the link as visited
+                    viewModel.markLinkAsVisited(link)
+                    // Open the link in browser
+                    val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
+                    context.startActivity(intent)
+                },
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             ),
@@ -713,35 +763,46 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                     ) {
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.Top,
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Icon(
-                                painterResource(R.drawable.ic_share),
-                                contentDescription = "Share link",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        val sendIntent = Intent().apply {
-                                            action = Intent.ACTION_SEND
-                                            putExtra(Intent.EXTRA_TEXT, link.uri.toString())
-                                            type = "text/plain"
-                                        }
-                                        context.startActivity(Intent.createChooser(sendIntent, null))
-                                    },
-                            )
-                            Icon(
-                                painterResource(R.drawable.open_in_browser_24px),
-                                contentDescription = "Open in browser",
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable {
-                                        // Mark the link as visited
-                                        viewModel.markLinkAsVisited(link)
-                                        // Open the link in browser
-                                        val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
-                                        context.startActivity(intent)
-                                    },
-                            )
+                            IconButton(
+                                onClick = {
+                                    val sendIntent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, link.uri.toString())
+                                        type = "text/plain"
+                                    }
+                                    context.startActivity(Intent.createChooser(sendIntent, null))
+                                },
+
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                ),
+
+                            ) {
+                                Icon(
+                                    painterResource(R.drawable.ic_share),
+                                    contentDescription = "Share link",
+                                    modifier = Modifier
+                                        .size(24.dp),
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { isEditing = true },
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                ),
+                            ) {
+                                Icon(
+                                    painterResource(R.drawable.ic_edit_note),
+                                    contentDescription = "Edit link",
+                                    modifier = Modifier
+                                        .size(24.dp),
+                                )
+                            }
                         }
                     }
                 }

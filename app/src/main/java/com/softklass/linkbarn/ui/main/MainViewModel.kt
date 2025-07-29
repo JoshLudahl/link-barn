@@ -14,9 +14,12 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -53,6 +56,18 @@ class MainViewModel @Inject constructor(
     private val _selectedCategories = MutableStateFlow<List<Category>>(emptyList())
     val selectedCategories: StateFlow<List<Category>> = _selectedCategories
 
+    private val _deletingLinkIds = MutableStateFlow<Set<String>>(emptySet())
+    val deletingLinkIds: StateFlow<Set<String>> = _deletingLinkIds
+
+    private val _snackbarState = MutableStateFlow<SnackbarState>(SnackbarState.Hidden)
+    val snackbarState: StateFlow<SnackbarState> = _snackbarState.asStateFlow()
+
+    private val _pendingDeletions = MutableStateFlow<Set<String>>(emptySet())
+    val pendingDeletions: StateFlow<Set<String>> = _pendingDeletions.asStateFlow()
+
+    private var deletedLink: Link? = null
+    private var deleteJob: Job? = null
+
     // Track all links separately to determine if we should show segmented buttons
     val allLinks: StateFlow<List<Link>> = linkRepository.getAllLinks().stateIn(
         scope = viewModelScope,
@@ -71,7 +86,8 @@ class MainViewModel @Inject constructor(
     val links: StateFlow<List<Link>> = kotlinx.coroutines.flow.combine(
         _currentFilter,
         _selectedCategoryIds,
-    ) { filter, selectedCategoryIds ->
+        _pendingDeletions,
+    ) { filter, selectedCategoryIds, pendingDeletions ->
         when (filter) {
             LinkFilter.ALL -> linkRepository.getAllLinks()
             LinkFilter.VISITED -> linkRepository.getVisitedLinks()
@@ -85,7 +101,12 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-    }.flatMapLatest { it }.stateIn(
+    }.flatMapLatest { flow ->
+        kotlinx.coroutines.flow.combine(flow, _pendingDeletions) { links, pendingDeletions ->
+            // Filter out links that are pending deletion
+            links.filter { link -> link.id !in pendingDeletions }
+        }
+    }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
@@ -282,14 +303,49 @@ class MainViewModel @Inject constructor(
     }
 
     fun deleteLink(link: Link) {
-        viewModelScope.launch(dispatcher) {
+        // Cancel any existing delete job
+        deleteJob?.cancel()
+
+        // Store the deleted link for potential undo
+        deletedLink = link
+
+        // Add link to pending deletions to hide it from UI
+        _pendingDeletions.value = _pendingDeletions.value + link.id
+
+        // Show snackbar with undo option
+        _snackbarState.value = SnackbarState.Visible(
+            message = "Link deleted",
+            linkName = link.name ?: "Untitled",
+        )
+
+        // Schedule permanent deletion after 5 seconds
+        deleteJob = viewModelScope.launch(dispatcher) {
             try {
+                delay(5000) // 5 seconds delay
                 linkRepository.deleteLink(link.id)
+                deletedLink = null
+                _pendingDeletions.value = _pendingDeletions.value - link.id
+                _snackbarState.value = SnackbarState.Hidden
             } catch (e: Exception) {
-                // Handle error if needed
+                // Handle error if needed - could add error state for delete operations
                 Log.e("MainViewModel", "Error deleting link", e)
+                _pendingDeletions.value = _pendingDeletions.value - link.id
+                _snackbarState.value = SnackbarState.Hidden
             }
         }
+    }
+
+    fun undoDelete() {
+        deleteJob?.cancel()
+        deletedLink?.let { link ->
+            _pendingDeletions.value = _pendingDeletions.value - link.id
+        }
+        deletedLink = null
+        _snackbarState.value = SnackbarState.Hidden
+    }
+
+    fun hideSnackbar() {
+        _snackbarState.value = SnackbarState.Hidden
     }
 
     fun setFilter(filter: LinkFilter) {
@@ -331,4 +387,9 @@ sealed class CategoryUiState {
     object Loading : CategoryUiState()
     object Success : CategoryUiState()
     data class Error(val message: String) : CategoryUiState()
+}
+
+sealed class SnackbarState {
+    object Hidden : SnackbarState()
+    data class Visible(val message: String, val linkName: String) : SnackbarState()
 }

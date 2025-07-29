@@ -25,6 +25,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -56,10 +58,41 @@ fun CategoriesScreen(
     onNavigateBack: () -> Unit,
     viewModel: CategoriesViewModel = hiltViewModel(),
 ) {
-    val categories by viewModel.allCategories.collectAsState(initial = emptyList())
+    val allCategories by viewModel.allCategories.collectAsState(initial = emptyList())
+    val pendingDeletions by viewModel.pendingDeletions.collectAsState()
+    val snackbarState by viewModel.snackbarState.collectAsState()
+
+    // Filter out categories that are pending deletion
+    val categories = allCategories.filter { category -> category.id !in pendingDeletions }
+    val snackbarHostState = remember { SnackbarHostState() }
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var showEditCategoryDialog by remember { mutableStateOf(false) }
     var categoryToEdit by remember { mutableStateOf<Category?>(null) }
+
+    // Handle snackbar visibility
+    LaunchedEffect(snackbarState) {
+        val currentState = snackbarState
+        when (currentState) {
+            is SnackbarState.Visible -> {
+                val result = snackbarHostState.showSnackbar(
+                    message = currentState.message,
+                    actionLabel = "Undo",
+                    withDismissAction = true,
+                )
+                when (result) {
+                    androidx.compose.material3.SnackbarResult.ActionPerformed -> {
+                        viewModel.undoDelete()
+                    }
+                    androidx.compose.material3.SnackbarResult.Dismissed -> {
+                        viewModel.hideSnackbar()
+                    }
+                }
+            }
+            is SnackbarState.Hidden -> {
+                // Do nothing
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -87,6 +120,9 @@ fun CategoriesScreen(
                     tint = MaterialTheme.colorScheme.onPrimary,
                 )
             }
+        },
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         },
     ) { paddingValues ->
         Column(

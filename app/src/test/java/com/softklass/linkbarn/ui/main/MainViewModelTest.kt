@@ -7,7 +7,7 @@ import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -18,10 +18,11 @@ import org.mockito.kotlin.verify
 
 @ExperimentalCoroutinesApi
 class MainViewModelTest {
-    @get:Rule
-    val mainCoroutineRule = MainCoroutineRule()
+    private val testDispatcher = StandardTestDispatcher()
 
-    private val testDispatcher = UnconfinedTestDispatcher()
+    @get:Rule
+    val mainCoroutineRule = MainCoroutineRule(testDispatcher)
+
     private val linkDataRepository: LinkDataRepository = mock()
     private val categoryRepository: CategoryRepository = mock()
     private lateinit var viewModel: MainViewModel
@@ -76,6 +77,9 @@ class MainViewModelTest {
 
         // When
         viewModel.deleteLink(testLink)
+
+        // Wait for animation delay to complete
+        testDispatcher.scheduler.advanceUntilIdle()
 
         // Then
         verify(linkDataRepository).deleteLink(testLink.id)
