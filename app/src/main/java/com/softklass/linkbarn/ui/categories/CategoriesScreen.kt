@@ -297,7 +297,8 @@ fun CategoryItem(
                     modifier = Modifier.size(40.dp),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
                     ),
                 ) {
                     Box(
@@ -307,7 +308,7 @@ fun CategoryItem(
                         Text(
                             text = category.name.take(1).uppercase(),
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            color = MaterialTheme.colorScheme.onPrimary,
                             fontWeight = FontWeight.Bold,
                         )
                     }
