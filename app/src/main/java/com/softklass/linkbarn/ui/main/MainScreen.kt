@@ -141,7 +141,6 @@ fun MainScreen(
                     bottom = 16.dp,
                 ),
                 actions = {
-
                     IconButton(onClick = { onNavigateToCategories() }) {
                         Icon(
                             painter = painterResource(R.drawable.ic_category),
@@ -915,7 +914,7 @@ fun ModalBottomSheetAddUrl(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val nameFocusRequester = remember { FocusRequester() }
 
     val uiState by viewModel.uiState.collectAsState()
