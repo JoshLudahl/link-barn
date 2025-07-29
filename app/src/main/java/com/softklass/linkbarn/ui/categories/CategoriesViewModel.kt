@@ -32,8 +32,9 @@ class CategoriesViewModel @Inject constructor(
     private val _pendingDeletions = MutableStateFlow<Set<String>>(emptySet())
     val pendingDeletions: StateFlow<Set<String>> = _pendingDeletions.asStateFlow()
 
-    private var deletedCategory: Category? = null
-    private var deleteJob: Job? = null
+    // Support multiple pending deletions
+    private val deletedCategories = mutableMapOf<String, Category>()
+    private val deleteJobs = mutableMapOf<String, Job>()
 
     private val _allCategories = categoryRepository.getAllCategories()
     val allCategories: Flow<List<Category>> = _allCategories
@@ -87,11 +88,11 @@ class CategoriesViewModel @Inject constructor(
     }
 
     fun deleteCategory(category: Category) {
-        // Cancel any existing delete job
-        deleteJob?.cancel()
+        // Cancel any existing delete job for this category
+        deleteJobs[category.id]?.cancel()
 
         // Store the deleted category for potential undo
-        deletedCategory = category
+        deletedCategories[category.id] = category
 
         // Add category to pending deletions to hide it from UI
         _pendingDeletions.value = _pendingDeletions.value + category.id
@@ -103,28 +104,52 @@ class CategoriesViewModel @Inject constructor(
         )
 
         // Schedule permanent deletion after 5 seconds
-        deleteJob = viewModelScope.launch(dispatcher) {
+        deleteJobs[category.id] = viewModelScope.launch(dispatcher) {
             try {
                 delay(5000) // 5 seconds delay
                 categoryRepository.deleteCategory(category)
-                deletedCategory = null
+                deletedCategories.remove(category.id)
+                deleteJobs.remove(category.id)
                 _pendingDeletions.value = _pendingDeletions.value - category.id
-                _snackbarState.value = SnackbarState.Hidden
+
+                // Only hide snackbar if this is the last pending deletion
+                if (_pendingDeletions.value.isEmpty()) {
+                    _snackbarState.value = SnackbarState.Hidden
+                }
             } catch (e: Exception) {
-                Log.e("CategoriesViewModel", "Failed to delete category: ${e.message}")
+                // Only log if it's not a cancellation exception (which is expected during undo)
+                if (e !is kotlinx.coroutines.CancellationException) {
+                    Log.e("CategoriesViewModel", "Failed to delete category: ${e.message}")
+                }
                 // Handle error if needed - could add error state for delete operations
+                deletedCategories.remove(category.id)
+                deleteJobs.remove(category.id)
                 _pendingDeletions.value = _pendingDeletions.value - category.id
-                _snackbarState.value = SnackbarState.Hidden
+
+                // Only hide snackbar if this is the last pending deletion
+                if (_pendingDeletions.value.isEmpty()) {
+                    _snackbarState.value = SnackbarState.Hidden
+                }
             }
         }
     }
 
     fun undoDelete() {
-        deleteJob?.cancel()
-        deletedCategory?.let { category ->
-            _pendingDeletions.value = _pendingDeletions.value - category.id
+        // Find the most recent deletion (the one shown in the snackbar)
+        val currentSnackbar = _snackbarState.value
+        if (currentSnackbar is SnackbarState.Visible) {
+            // Find the category by name (since snackbar shows category name)
+            val categoryToUndo = deletedCategories.values.find { it.name == currentSnackbar.categoryName }
+            categoryToUndo?.let { category ->
+                // Cancel the delete job for this category
+                deleteJobs[category.id]?.cancel()
+                deleteJobs.remove(category.id)
+
+                // Remove from deleted categories and pending deletions
+                deletedCategories.remove(category.id)
+                _pendingDeletions.value = _pendingDeletions.value - category.id
+            }
         }
-        deletedCategory = null
         _snackbarState.value = SnackbarState.Hidden
     }
 
@@ -134,6 +159,58 @@ class CategoriesViewModel @Inject constructor(
 
     fun resetCategoryState() {
         _categoryUiState.value = CategoryUiState.Initial
+    }
+
+    /**
+     * Process all pending deletions immediately.
+     * This should be called when the user leaves the screen.
+     */
+    fun processPendingDeletions() {
+        viewModelScope.launch(dispatcher) {
+            // Get a copy of pending deletions to avoid concurrent modification
+            val pendingIds = _pendingDeletions.value.toSet()
+
+            for (categoryId in pendingIds) {
+                val category = deletedCategories[categoryId]
+                if (category != null) {
+                    try {
+                        // Cancel the delayed deletion job
+                        deleteJobs[categoryId]?.cancel()
+
+                        // Delete immediately
+                        categoryRepository.deleteCategory(category)
+
+                        // Clean up
+                        deletedCategories.remove(categoryId)
+                        deleteJobs.remove(categoryId)
+                        _pendingDeletions.value = _pendingDeletions.value - categoryId
+                    } catch (e: Exception) {
+                        // Only log if it's not a cancellation exception
+                        if (e !is kotlinx.coroutines.CancellationException) {
+                            Log.e("CategoriesViewModel", "Failed to process pending deletion for category ${category.name}: ${e.message}")
+                        }
+                        // Clean up even if deletion failed
+                        deletedCategories.remove(categoryId)
+                        deleteJobs.remove(categoryId)
+                        _pendingDeletions.value = _pendingDeletions.value - categoryId
+                    }
+                }
+            }
+
+            // Hide snackbar after processing all deletions
+            _snackbarState.value = SnackbarState.Hidden
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        // Process any remaining pending deletions when ViewModel is cleared
+        processPendingDeletions()
+
+        // Cancel all remaining jobs
+        deleteJobs.values.forEach { it.cancel() }
+        deleteJobs.clear()
+        deletedCategories.clear()
     }
 }
 
