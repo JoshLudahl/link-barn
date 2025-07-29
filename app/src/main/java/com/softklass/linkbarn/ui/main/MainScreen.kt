@@ -740,27 +740,12 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             .weight(1f)
                             .padding(end = 16.dp),
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(
-                                text = link.name ?: "Untitled",
-                                fontSize = 18.sp,
-                                fontWeight = if (link.visited) FontWeight.Normal else FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                            )
-                            Text(
-                                text = if (link.visited) "Viewed" else "Unviewed",
-                                fontSize = 10.sp,
-                                color = if (link.visited) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.tertiary
-                                },
-                                fontWeight = FontWeight.Normal,
-                                modifier = Modifier.padding(start = 8.dp),
-                            )
-                        }
+                        Text(
+                            text = link.name ?: "Untitled",
+                            fontSize = 18.sp,
+                            fontWeight = if (link.visited) FontWeight.Normal else FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = link.uri.toString(),
@@ -774,6 +759,18 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                         ) {
+                            // Display unviewed/viewed label
+                            Text(
+                                text = if (link.visited) "Viewed" else "Unviewed",
+                                fontSize = 10.sp,
+                                color = if (link.visited) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.tertiary
+                                },
+                                fontWeight = FontWeight.Normal,
+                            )
+
                             // Display categories if any
                             if (link.categoryIds.isNotEmpty()) {
                                 val categories = remember(link.categoryIds) {
@@ -788,7 +785,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                 // Use a Row to display category chips
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    modifier = Modifier.padding(top = 4.dp),
+                                    modifier = Modifier.padding(start = 8.dp),
                                 ) {
                                     categories.value.take(3).forEach { category ->
 
