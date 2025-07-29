@@ -3,9 +3,14 @@ package com.softklass.linkbarn.ui.main
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -18,8 +23,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -88,6 +95,12 @@ fun MainScreen(
     onNavigateToCategories: () -> Unit = {},
 ) {
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    // Track if header should be visible based on scroll position
+    val isHeaderVisible = listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < 100
+    val showScrollToTopButton = listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 100
 
     // Snackbar state handling
     val snackbarState by viewModel.snackbarState.collectAsState()
@@ -174,249 +187,296 @@ fun MainScreen(
             )
         },
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .fillMaxSize()
                 .padding(padding),
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(intrinsicSize = IntrinsicSize.Max),
-                verticalAlignment = Alignment.CenterVertically,
+            // Main content with LazyColumn
+            Column(
+                modifier = Modifier.fillMaxSize(),
             ) {
-                Column(
-                    modifier = Modifier
-                        .weight(2f),
+                // Collapsing header
+                AnimatedVisibility(
+                    visible = isHeaderVisible,
+                    enter = slideInVertically(
+                        initialOffsetY = { -it },
+                        animationSpec = tween(300),
+                    ) + fadeIn(animationSpec = tween(300)),
+                    exit = slideOutVertically(
+                        targetOffsetY = { -it },
+                        animationSpec = tween(300),
+                    ) + fadeOut(animationSpec = tween(300)),
                 ) {
-                    Text(
-                        fontSize = 22.sp,
-                        text = stringResource(id = R.string.main_screen_title),
-                    )
-                    Text(text = "Your saved links.")
+                    CollapsingHeader(viewModel = viewModel)
                 }
 
-                Spacer(modifier = Modifier.width(16.dp))
+                // Links list
+                LinksContent(
+                    viewModel = viewModel,
+                    listState = listState,
+                    openBottomSheet = { openBottomSheet = true },
+                )
             }
-            Spacer(
+
+            // Scroll to top button
+            AnimatedVisibility(
+                visible = showScrollToTopButton,
+                enter = slideInVertically(
+                    initialOffsetY = { it },
+                    animationSpec = tween(300),
+                ) + fadeIn(animationSpec = tween(300)),
+                exit = slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(300),
+                ) + fadeOut(animationSpec = tween(300)),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(16.dp),
-            )
-
-            // Filter segmented button
-            val currentFilter by viewModel.currentFilter.collectAsState()
-            val allLinks by viewModel.allLinks.collectAsState()
-
-            // Only show filter buttons if there are any links
-            if (allLinks.isNotEmpty()) {
-                Column {
-                    Text(
-                        text = "Filter by viewed".uppercase(),
-                        style = MaterialTheme.typography.labelMedium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                    )
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        // Use SingleChoiceSegmentedButtonRow for filter buttons
-                        SingleChoiceSegmentedButtonRow(
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            // All button
-                            SegmentedButton(
-                                selected = currentFilter == LinkFilter.ALL,
-                                onClick = { viewModel.setFilter(LinkFilter.ALL) },
-                                modifier = Modifier.weight(1f),
-                                shape = SegmentedButtonDefaults.itemShape(
-                                    index = 0,
-                                    count = 3,
-                                ),
-                                label = {
-                                    Text("All")
-                                },
-                            )
-
-                            // Unviewed button
-                            SegmentedButton(
-                                selected = currentFilter == LinkFilter.UNVISITED,
-                                onClick = { viewModel.setFilter(LinkFilter.UNVISITED) },
-                                modifier = Modifier.weight(1f),
-                                shape = SegmentedButtonDefaults.itemShape(
-                                    index = 1,
-                                    count = 3,
-                                ),
-                                label = {
-                                    Text("Unviewed")
-                                },
-                            )
-
-                            // Viewed button
-                            SegmentedButton(
-                                selected = currentFilter == LinkFilter.VISITED,
-                                onClick = { viewModel.setFilter(LinkFilter.VISITED) },
-                                modifier = Modifier.weight(1f),
-                                shape = SegmentedButtonDefaults.itemShape(
-                                    index = 2,
-                                    count = 3,
-                                ),
-                                label = {
-                                    Text("Viewed")
-                                },
-                            )
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp),
+            ) {
+                FloatingActionButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            listState.animateScrollToItem(0)
                         }
-                    }
+                    },
+                    containerColor = MaterialTheme.colorScheme.secondary,
+                    shape = RoundedCornerShape(16.dp),
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_up),
+                        contentDescription = "Scroll to top",
+                        tint = MaterialTheme.colorScheme.onSecondary,
+                    )
                 }
             }
+        }
+    }
+}
 
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp),
-            )
-
-            // Category filter chips
-            val allCategories by viewModel.allCategories.collectAsState()
-            val selectedCategoryIds by viewModel.selectedCategoryIds.collectAsState()
-
-            if (allCategories.isNotEmpty()) {
+@Composable
+private fun CollapsingHeader(viewModel: MainViewModel) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+    ) {
+        // Title section
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(intrinsicSize = IntrinsicSize.Max),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(2f),
+            ) {
                 Text(
-                    text = "Filter by category".uppercase(),
+                    fontSize = 22.sp,
+                    text = stringResource(id = R.string.main_screen_title),
+                )
+                Text(text = "Your saved links.")
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Filter segmented button
+        val currentFilter by viewModel.currentFilter.collectAsState()
+        val allLinks by viewModel.allLinks.collectAsState()
+
+        // Only show filter buttons if there are any links
+        if (allLinks.isNotEmpty()) {
+            Column {
+                Text(
+                    text = "Filter by viewed".uppercase(),
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp),
                 )
 
-                LazyRow(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 8.dp),
+                        .padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    // "All" chip
-                    item {
-                        androidx.compose.material3.FilterChip(
-                            selected = selectedCategoryIds.isEmpty(),
-                            onClick = { viewModel.selectCategoryFilter(null) },
+                    SingleChoiceSegmentedButtonRow(
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        SegmentedButton(
+                            selected = currentFilter == LinkFilter.ALL,
+                            onClick = { viewModel.setFilter(LinkFilter.ALL) },
+                            modifier = Modifier.weight(1f),
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = 0,
+                                count = 3,
+                            ),
                             label = { Text("All") },
-                            modifier = Modifier.padding(vertical = 4.dp),
                         )
-                    }
 
-                    // Category chips
-                    items(allCategories) { category ->
-                        androidx.compose.material3.FilterChip(
-                            selected = selectedCategoryIds.contains(category.id),
-                            onClick = { viewModel.selectCategoryFilter(category.id) },
-                            label = { Text(category.name) },
-                            modifier = Modifier.padding(vertical = 4.dp),
+                        SegmentedButton(
+                            selected = currentFilter == LinkFilter.UNVISITED,
+                            onClick = { viewModel.setFilter(LinkFilter.UNVISITED) },
+                            modifier = Modifier.weight(1f),
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = 1,
+                                count = 3,
+                            ),
+                            label = { Text("Unviewed") },
+                        )
+
+                        SegmentedButton(
+                            selected = currentFilter == LinkFilter.VISITED,
+                            onClick = { viewModel.setFilter(LinkFilter.VISITED) },
+                            modifier = Modifier.weight(1f),
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = 2,
+                                count = 3,
+                            ),
+                            label = { Text("Viewed") },
                         )
                     }
                 }
+            }
+        }
 
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp),
-                )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Category filter chips
+        val allCategories by viewModel.allCategories.collectAsState()
+        val selectedCategoryIds by viewModel.selectedCategoryIds.collectAsState()
+
+        if (allCategories.isNotEmpty()) {
+            Text(
+                text = "Filter by category".uppercase(),
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                // "All" chip
+                item {
+                    androidx.compose.material3.FilterChip(
+                        selected = selectedCategoryIds.isEmpty(),
+                        onClick = { viewModel.selectCategoryFilter(null) },
+                        label = { Text("All") },
+                        modifier = Modifier.padding(vertical = 4.dp),
+                    )
+                }
+
+                // Category chips
+                items(allCategories) { category ->
+                    androidx.compose.material3.FilterChip(
+                        selected = selectedCategoryIds.contains(category.id),
+                        onClick = { viewModel.selectCategoryFilter(category.id) },
+                        label = { Text(category.name) },
+                        modifier = Modifier.padding(vertical = 4.dp),
+                    )
+                }
             }
 
-            Row {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+    }
+}
+
+@Composable
+private fun LinksContent(
+    viewModel: MainViewModel,
+    listState: LazyListState,
+    openBottomSheet: () -> Unit,
+) {
+    val links by viewModel.links.collectAsState()
+    val deletingLinkIds by viewModel.deletingLinkIds.collectAsState()
+    val currentFilter by viewModel.currentFilter.collectAsState()
+
+    LazyColumn(
+        state = listState,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        if (links.isEmpty()) {
+            item {
                 Column(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    val links by viewModel.links.collectAsState()
-                    val deletingLinkIds by viewModel.deletingLinkIds.collectAsState()
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        if (links.isEmpty()) {
-                            item {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                ) {
-                                    // Customize empty state text based on current filter
-                                    val emptyStateText = when (currentFilter) {
-                                        LinkFilter.VISITED -> "No viewed links"
-                                        LinkFilter.UNVISITED -> "No unviewed links"
-                                        LinkFilter.ALL -> "No links added yet"
-                                        LinkFilter.CATEGORY -> "No links in this category"
-                                    }
+                    // Customize empty state text based on current filter
+                    val emptyStateText = when (currentFilter) {
+                        LinkFilter.VISITED -> "No viewed links"
+                        LinkFilter.UNVISITED -> "No unviewed links"
+                        LinkFilter.ALL -> "No links added yet"
+                        LinkFilter.CATEGORY -> "No links in this category"
+                    }
 
-                                    Text(
-                                        text = emptyStateText,
-                                        modifier = Modifier
-                                            .fillMaxWidth(),
-                                        textAlign = TextAlign.Center,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
+                    Text(
+                        text = emptyStateText,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
 
-                                    // Only show the full empty state UI for the ALL filter
-                                    if (currentFilter == LinkFilter.ALL) {
-                                        Spacer(modifier = Modifier.height(24.dp))
-                                        Icon(
-                                            modifier = Modifier
-                                                .size(200.dp)
-                                                .padding(16.dp),
-                                            painter = painterResource(id = R.drawable.ic_empty_state),
-                                            contentDescription = "No links",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
-                                        )
-                                        Spacer(modifier = Modifier.height(16.dp))
-                                        Button(
-                                            onClick = { openBottomSheet = true },
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = MaterialTheme.colorScheme.primary,
-                                            ),
-                                            modifier = Modifier.padding(horizontal = 16.dp),
-                                        ) {
-                                            Icon(
-                                                painterResource(R.drawable.ic_add),
-                                                contentDescription = "Add Link",
-                                                tint = MaterialTheme.colorScheme.onPrimary,
-                                                modifier = Modifier.size(20.dp),
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(
-                                                text = "Add Link",
-                                                color = MaterialTheme.colorScheme.onPrimary,
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            items(
-                                items = links,
-                                key = { link -> link.id },
-                            ) { link ->
-                                AnimatedVisibility(
-                                    visible = !deletingLinkIds.contains(link.id),
-                                    exit = slideOutHorizontally(
-                                        targetOffsetX = { -it },
-                                        animationSpec = tween(300),
-                                    ),
-                                ) {
-                                    LinkItem(link = link, viewModel = viewModel)
-                                }
-                            }
+                    // Only show the full empty state UI for the ALL filter
+                    if (currentFilter == LinkFilter.ALL) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Icon(
+                            modifier = Modifier
+                                .size(200.dp)
+                                .padding(16.dp),
+                            painter = painterResource(id = R.drawable.ic_empty_state),
+                            contentDescription = "No links",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(
+                            onClick = openBottomSheet,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                            ),
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        ) {
+                            Icon(
+                                painterResource(R.drawable.ic_add),
+                                contentDescription = "Add Link",
+                                tint = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(20.dp),
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Add Link",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                            )
                         }
                     }
+                }
+            }
+        } else {
+            items(
+                items = links,
+                key = { link -> link.id },
+            ) { link ->
+                AnimatedVisibility(
+                    visible = !deletingLinkIds.contains(link.id),
+                    exit = slideOutHorizontally(
+                        targetOffsetX = { -it },
+                        animationSpec = tween(300),
+                    ),
+                ) {
+                    LinkItem(link = link, viewModel = viewModel)
                 }
             }
         }
