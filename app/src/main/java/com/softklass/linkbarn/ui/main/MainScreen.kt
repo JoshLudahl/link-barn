@@ -671,6 +671,17 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                 val isSelected = selectedCategories.contains(category)
                                 androidx.compose.material3.FilterChip(
                                     selected = isSelected,
+                                    leadingIcon = if (isSelected) {
+                                        {
+                                            Icon(
+                                                painter = painterResource(R.drawable.ic_check),
+                                                contentDescription = "Done icon",
+                                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                            )
+                                        }
+                                    } else {
+                                        null
+                                    },
                                     onClick = {
                                         if (isSelected) {
                                             viewModel.unselectCategory(category)
@@ -1124,6 +1135,17 @@ fun ModalBottomSheetAddUrl(
                             val isSelected = selectedCategories.contains(category)
                             androidx.compose.material3.FilterChip(
                                 selected = isSelected,
+                                leadingIcon = if (isSelected) {
+                                    {
+                                        Icon(
+                                            painter = painterResource(R.drawable.ic_check),
+                                            contentDescription = "Done icon",
+                                            modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                        )
+                                    }
+                                } else {
+                                    null
+                                },
                                 onClick = {
                                     if (isSelected) {
                                         viewModel.unselectCategory(category)
