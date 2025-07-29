@@ -39,6 +39,7 @@ import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -378,6 +379,17 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
                 items(allCategories) { category ->
                     androidx.compose.material3.FilterChip(
                         selected = selectedCategoryIds.contains(category.id),
+                        leadingIcon = if (selectedCategoryIds.contains(category.id)) {
+                            {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_check),
+                                    contentDescription = "Done icon",
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                )
+                            }
+                        } else {
+                            null
+                        },
                         onClick = { viewModel.selectCategoryFilter(category.id) },
                         label = { Text(category.name) },
                         modifier = Modifier.padding(vertical = 4.dp),
@@ -782,13 +794,12 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                     categories.value = viewModel.getCategoriesForLink(link)
                                 }
 
-                                // Use a Row to display category chips
-                                Row(
+                                // Use a LazyRow to display category chips with horizontal scrolling
+                                LazyRow(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     modifier = Modifier.padding(start = 8.dp),
                                 ) {
-                                    categories.value.take(3).forEach { category ->
-
+                                    items(categories.value) { category ->
                                         ElevatedAssistChip(
                                             onClick = { },
                                             label = {
@@ -798,16 +809,6 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                                 )
                                             },
                                             modifier = Modifier.height(24.dp),
-                                        )
-                                    }
-
-                                    // Show count of additional categories if there are more than 3
-                                    if (categories.value.size > 3) {
-                                        Text(
-                                            text = "+${categories.value.size - 3} more",
-                                            fontSize = 10.sp,
-                                            color = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.padding(start = 4.dp),
                                         )
                                     }
                                 }
