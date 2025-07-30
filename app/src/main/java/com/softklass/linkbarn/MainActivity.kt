@@ -1,5 +1,6 @@
 package com.softklass.linkbarn
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -36,6 +37,10 @@ class MainActivity : ComponentActivity() {
     private lateinit var aut: Task<AppUpdateInfo>
     private val updateType = AppUpdateType.FLEXIBLE
 
+    companion object {
+        var sharedUrl: String? = null
+    }
+
     val listener =
         InstallStateUpdatedListener { state ->
             if (state.installStatus() == InstallStatus.DOWNLOADED) {
@@ -56,6 +61,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Handle shared URL intent
+        handleIntent(intent)
+
         appUpdateManager = AppUpdateManagerFactory.create(applicationContext)
         aut = appUpdateManager.appUpdateInfo
         checkIsUpdateAvailable()
@@ -68,6 +76,21 @@ class MainActivity : ComponentActivity() {
                 ) {
                     AppNavHost()
                 }
+            }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent) {
+        if (intent.action == Intent.ACTION_SEND && intent.type == "text/plain") {
+            val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
+            if (!sharedText.isNullOrBlank()) {
+                sharedUrl = sharedText
+                Log.d("MainActivity", "Received shared URL: $sharedText")
             }
         }
     }

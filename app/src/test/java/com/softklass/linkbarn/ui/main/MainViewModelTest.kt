@@ -9,6 +9,8 @@ import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -83,5 +85,36 @@ class MainViewModelTest {
 
         // Then
         verify(linkDataRepository).deleteLink(testLink.id)
+    }
+
+    @Test
+    fun `setSharedUrl should update sharedUrl state`() = runTest {
+        // Given
+        val testUrl = "https://example.com"
+
+        // When
+        viewModel.setSharedUrl(testUrl)
+
+        // Then
+        assertEquals(testUrl, viewModel.sharedUrl.value)
+    }
+
+    @Test
+    fun `clearSharedUrl should set sharedUrl state to null`() = runTest {
+        // Given
+        val testUrl = "https://example.com"
+        viewModel.setSharedUrl(testUrl)
+
+        // When
+        viewModel.clearSharedUrl()
+
+        // Then
+        assertNull(viewModel.sharedUrl.value)
+    }
+
+    @Test
+    fun `sharedUrl should initially be null`() = runTest {
+        // Then
+        assertNull(viewModel.sharedUrl.value)
     }
 }

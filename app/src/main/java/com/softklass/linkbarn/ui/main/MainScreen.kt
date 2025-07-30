@@ -82,6 +82,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.softklass.linkbarn.MainActivity
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
@@ -128,6 +129,15 @@ fun MainScreen(
             is SnackbarState.Hidden -> {
                 // Do nothing
             }
+        }
+    }
+
+    // Handle shared URL from MainActivity
+    LaunchedEffect(Unit) {
+        MainActivity.sharedUrl?.let { url ->
+            viewModel.setSharedUrl(url)
+            openBottomSheet = true
+            MainActivity.sharedUrl = null // Clear the shared URL after handling
         }
     }
 
@@ -982,6 +992,7 @@ fun ModalBottomSheetAddUrl(
     val uiState by viewModel.uiState.collectAsState()
     val allCategories by viewModel.allCategories.collectAsState()
     val selectedCategories by viewModel.selectedCategories.collectAsState()
+    val sharedUrl by viewModel.sharedUrl.collectAsState()
 
     // Show category creation dialog
     CategoryDialog(
@@ -1001,6 +1012,7 @@ fun ModalBottomSheetAddUrl(
                 url = ""
                 name = ""
                 viewModel.clearSelectedCategories()
+                viewModel.clearSharedUrl()
                 scope.launch {
                     bottomSheetState.hide()
                     onOpenBottomSheetChange(false)
@@ -1014,6 +1026,13 @@ fun ModalBottomSheetAddUrl(
         }
     }
 
+    // Handle shared URL pre-filling
+    LaunchedEffect(sharedUrl) {
+        sharedUrl?.let { sharedUrlValue ->
+            url = sharedUrlValue
+        }
+    }
+
     // Sheet content
     if (openBottomSheet) {
         ModalBottomSheet(
@@ -1022,6 +1041,7 @@ fun ModalBottomSheetAddUrl(
                 errorMessage = null
                 viewModel.resetState()
                 viewModel.clearSelectedCategories()
+                viewModel.clearSharedUrl()
             },
             sheetState = bottomSheetState,
         ) {
@@ -1044,6 +1064,7 @@ fun ModalBottomSheetAddUrl(
                                 errorMessage = null
                                 viewModel.resetState()
                                 viewModel.clearSelectedCategories()
+                                viewModel.clearSharedUrl()
                             }
                         },
                     ) {

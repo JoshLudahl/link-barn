@@ -65,6 +65,9 @@ class MainViewModel @Inject constructor(
     private val _pendingDeletions = MutableStateFlow<Set<String>>(emptySet())
     val pendingDeletions: StateFlow<Set<String>> = _pendingDeletions.asStateFlow()
 
+    private val _sharedUrl = MutableStateFlow<String?>(null)
+    val sharedUrl: StateFlow<String?> = _sharedUrl.asStateFlow()
+
     private var deletedLink: Link? = null
     private var deleteJob: Job? = null
 
@@ -365,6 +368,14 @@ class MainViewModel @Inject constructor(
                 Log.e("MainViewModel", "Error marking link as visited", e)
             }
         }
+    }
+
+    fun setSharedUrl(url: String) {
+        _sharedUrl.value = url
+    }
+
+    fun clearSharedUrl() {
+        _sharedUrl.value = null
     }
 }
 
