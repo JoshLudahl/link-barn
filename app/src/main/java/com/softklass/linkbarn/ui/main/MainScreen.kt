@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -147,13 +146,6 @@ fun MainScreen(
             BottomAppBar(
                 // modifier = Modifier.height(56.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
-                windowInsets =
-                WindowInsets(
-                    left = 8.dp,
-                    top = 0.dp,
-                    right = 0.dp,
-                    bottom = 16.dp,
-                ),
                 actions = {
                     IconButton(onClick = { onNavigateToCategories() }) {
                         Icon(
