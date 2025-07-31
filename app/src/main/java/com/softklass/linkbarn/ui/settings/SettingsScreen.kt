@@ -141,11 +141,11 @@ fun SettingsScreen(
                                 modifier = Modifier.weight(1f),
 
                                 shapes =
-                                    when (index) {
-                                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                                    },
+                                when (index) {
+                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                },
                             ) {
                                 if (dynamicColorEnabled && label == "Dynamic" || !dynamicColorEnabled && label == "Default") {
                                     Icon(
@@ -197,11 +197,11 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f),
 
                             shapes =
-                                when (index) {
-                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                                },
+                            when (index) {
+                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                            },
                         ) {
                             if (themeMode == label) {
                                 Icon(
@@ -210,7 +210,7 @@ fun SettingsScreen(
                                 )
                             }
 
-                            // Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
+                            Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
 
                             Text(label.name.lowercase().replaceFirstChar { it.titlecaseChar() }, maxLines = 1)
                         }
