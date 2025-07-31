@@ -29,9 +29,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedAssistChip
@@ -47,9 +50,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
@@ -57,6 +57,8 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
@@ -88,7 +90,7 @@ import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     viewModel: MainViewModel,
@@ -121,11 +123,13 @@ fun MainScreen(
                     androidx.compose.material3.SnackbarResult.ActionPerformed -> {
                         viewModel.undoDelete()
                     }
+
                     androidx.compose.material3.SnackbarResult.Dismissed -> {
                         viewModel.hideSnackbar()
                     }
                 }
             }
+
             is SnackbarState.Hidden -> {
                 // Do nothing
             }
@@ -257,6 +261,7 @@ fun MainScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun CollapsingHeader(viewModel: MainViewModel) {
     Column(
@@ -286,62 +291,50 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Filter segmented button
-        val currentFilter by viewModel.currentFilter.collectAsState()
         val allLinks by viewModel.allLinks.collectAsState()
+        val options = listOf(LinkFilter.ALL, LinkFilter.VISITED, LinkFilter.UNVISITED)
+        val currentFilter by viewModel.currentFilter.collectAsState()
 
-        // Only show filter buttons if there are any links
-        if (allLinks.isNotEmpty()) {
-            Column {
-                Text(
-                    text = "Filter by viewed".uppercase(),
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 4.dp),
-                )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(ToggleButtonDefaults.IconSpacing),
+        ) {
+            if (allLinks.isNotEmpty()) {
+                options.forEachIndexed { index, label ->
+                    ToggleButton(
+                        checked = currentFilter == label,
+                        onCheckedChange = {
+                            when (label) {
+                                LinkFilter.ALL -> viewModel.setFilter(LinkFilter.ALL)
+                                LinkFilter.VISITED -> viewModel.setFilter(LinkFilter.VISITED)
+                                LinkFilter.UNVISITED -> viewModel.setFilter(LinkFilter.UNVISITED)
+                                else -> {}
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth(),
+                        shapes =
+                        when (index) {
+                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                        },
                     ) {
-                        SegmentedButton(
-                            selected = currentFilter == LinkFilter.ALL,
-                            onClick = { viewModel.setFilter(LinkFilter.ALL) },
-                            modifier = Modifier.weight(1f),
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = 0,
-                                count = 3,
-                            ),
-                            label = { Text("All") },
-                        )
+                        if (currentFilter == label) {
+                            Icon(
+                                Icons.Rounded.Done,
+                                contentDescription = "Localized description",
+                            )
+                        }
 
-                        SegmentedButton(
-                            selected = currentFilter == LinkFilter.UNVISITED,
-                            onClick = { viewModel.setFilter(LinkFilter.UNVISITED) },
-                            modifier = Modifier.weight(1f),
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = 1,
-                                count = 3,
-                            ),
-                            label = { Text("Unviewed") },
-                        )
+                        Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
 
-                        SegmentedButton(
-                            selected = currentFilter == LinkFilter.VISITED,
-                            onClick = { viewModel.setFilter(LinkFilter.VISITED) },
-                            modifier = Modifier.weight(1f),
-                            shape = SegmentedButtonDefaults.itemShape(
-                                index = 2,
-                                count = 3,
-                            ),
-                            label = { Text("Viewed") },
-                        )
+                        val text = when (label) {
+                            LinkFilter.ALL -> "All"
+                            LinkFilter.VISITED -> "Visited"
+                            LinkFilter.UNVISITED -> "Unvisited"
+                            else -> ""
+                        }
+                        Text(text, maxLines = 1)
                     }
                 }
             }
@@ -518,7 +511,10 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                 isEditing = false
                 viewModel.resetEditState()
             }
-            else -> { /* No action needed */ }
+
+            else -> {
+                /* No action needed */
+            }
         }
     }
 
@@ -897,12 +893,14 @@ fun CategoryDialog(
             is CategoryUiState.Error -> {
                 errorMessage = (categoryUiState as CategoryUiState.Error).message
             }
+
             is CategoryUiState.Success -> {
                 errorMessage = null
                 categoryName = ""
                 onDismiss()
                 viewModel.resetCategoryState()
             }
+
             else -> {
                 errorMessage = null
             }
