@@ -326,7 +326,7 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
                             )
                         }
 
-                        Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
+                        // Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
 
                         val text = when (label) {
                             LinkFilter.ALL -> "All"

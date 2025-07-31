@@ -15,14 +15,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -40,11 +46,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.material.color.DynamicColors
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit = {},
@@ -104,111 +111,62 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Column(modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = "Dynamic Color",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                )
-                Text(
-                    text = "Use colors from your wallpaper to personalize your app experience",
-                    fontSize = 14.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Material 3 expressive button group
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(MaterialTheme.colorScheme.surfaceContainerHigh),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    // Theme button
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                settingsViewModel.setDynamicColorEnabled(false)
-                            }
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        shape = RoundedCornerShape(
-                            topStart = 16.dp,
-                            bottomStart = 16.dp,
-                            topEnd = 0.dp,
-                            bottomEnd = 0.dp,
-                        ),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (!dynamicColorEnabled) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                            },
-                            contentColor = if (!dynamicColorEnabled) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        ),
-                        contentPadding = PaddingValues(0.dp),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
-                    ) {
-                        Text("Theme")
-                    }
-
-                    // Vertical divider
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .fillMaxHeight()
-                            .background(MaterialTheme.colorScheme.outlineVariant),
+            if (DynamicColors.isDynamicColorAvailable()) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Dynamic Color",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Text(
+                        text = "Use colors from your wallpaper to personalize your app experience",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
 
-                    // Dynamic button
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                settingsViewModel.setDynamicColorEnabled(true)
-                            }
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight(),
-                        shape = RoundedCornerShape(
-                            topStart = 0.dp,
-                            bottomStart = 0.dp,
-                            topEnd = 16.dp,
-                            bottomEnd = 16.dp,
-                        ),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = if (dynamicColorEnabled) {
-                                MaterialTheme.colorScheme.primaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                            },
-                            contentColor = if (dynamicColorEnabled) {
-                                MaterialTheme.colorScheme.onPrimaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.onSurfaceVariant
-                            },
-                        ),
-                        contentPadding = PaddingValues(0.dp),
-                        elevation = ButtonDefaults.buttonElevation(
-                            defaultElevation = 0.dp,
-                            pressedElevation = 0.dp,
-                            focusedElevation = 0.dp,
-                        ),
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    val options = listOf("Default", "Dynamic")
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(ToggleButtonDefaults.IconSpacing),
                     ) {
-                        Text("Dynamic")
+                        options.forEachIndexed { index, label ->
+
+                            ToggleButton(
+                                checked = if (dynamicColorEnabled && label == "Dynamic") {
+                                    true
+                                } else if (!dynamicColorEnabled && label == "Default") {
+                                    true
+                                } else {
+                                    false
+                                },
+                                onCheckedChange = {
+                                    scope.launch {
+                                        settingsViewModel.setDynamicColorEnabled(!dynamicColorEnabled)
+                                    }
+                                },
+                                modifier = Modifier.weight(1f),
+
+                                shapes =
+                                when (index) {
+                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                },
+                            ) {
+                                if (dynamicColorEnabled && label == "Dynamic" || !dynamicColorEnabled && label == "Default") {
+                                    Icon(
+                                        Icons.Rounded.Done,
+                                        contentDescription = "Localized description",
+                                    )
+                                }
+
+                                Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
+
+                                Text(label, maxLines = 1)
+                            }
+                        }
                     }
                 }
             }

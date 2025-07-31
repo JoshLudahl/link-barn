@@ -53,18 +53,4 @@ class SettingsPreferences @Inject constructor(
             preferences[THEME_MODE] = mode.value
         }
     }
-
-    // Get the dark theme preference as a Flow (for backward compatibility)
-    val darkThemeEnabled: Flow<Boolean> = dataStore.data.map { preferences ->
-        // Convert theme mode to boolean (DARK = true, otherwise false)
-        ThemeMode.fromValue(preferences[THEME_MODE] ?: ThemeMode.SYSTEM.value) == ThemeMode.DARK
-    }
-
-    // Update the dark theme preference (for backward compatibility)
-    suspend fun setDarkThemeEnabled(enabled: Boolean) {
-        dataStore.edit { preferences ->
-            // Convert boolean to theme mode (true = DARK, false = LIGHT)
-            preferences[THEME_MODE] = if (enabled) ThemeMode.DARK.value else ThemeMode.LIGHT.value
-        }
-    }
 }
