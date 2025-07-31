@@ -79,6 +79,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -609,6 +610,11 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         colors = TextFieldDefaults.colors(),
+                        keyboardOptions =
+                        KeyboardOptions(
+                            imeAction = ImeAction.Done,
+                            capitalization = KeyboardCapitalization.Sentences,
+                        ),
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -931,7 +937,7 @@ fun CategoryDialog(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         isError = errorMessage != null,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, capitalization = KeyboardCapitalization.Sentences),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 viewModel.addCategory(categoryName)
