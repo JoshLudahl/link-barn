@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -377,23 +379,20 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             // Get the current context
-            val context = androidx.compose.ui.platform.LocalContext.current
+            val context = LocalContext.current
 
-            // Add a button to leave a review
             Button(
-                onClick = {
-                    settingsViewModel.openPlayStoreForReview(context)
-                },
+                onClick = { settingsViewModel.openPlayStoreForReview(context) },
+                contentPadding = ButtonDefaults.ButtonWithIconContentPadding,
                 modifier = Modifier.fillMaxWidth(),
             ) {
-                Row {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_star),
-                        contentDescription = "Rate app",
-                        modifier = Modifier.padding(end = 8.dp),
-                    )
-                    Text("Rate this app")
-                }
+                Icon(
+                    painter = painterResource(R.drawable.ic_star),
+                    contentDescription = "Leave a review icon",
+                    modifier = Modifier.size(ButtonDefaults.IconSize),
+                )
+                Spacer(Modifier.size(ButtonDefaults.IconSpacing))
+                Text("Rate this app")
             }
 
             Spacer(modifier = Modifier.height(16.dp))
