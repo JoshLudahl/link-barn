@@ -350,7 +350,7 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
         if (allCategories.isNotEmpty()) {
             Text(
                 text = "Filter by category".uppercase(),
-                style = MaterialTheme.typography.labelMedium,
+                style = MaterialTheme.typography.titleSmallEmphasized,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
