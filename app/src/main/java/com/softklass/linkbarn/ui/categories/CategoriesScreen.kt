@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
+import com.softklass.linkbarn.ui.partials.DismissBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -249,43 +250,7 @@ fun CategoryItem(
         state = dismissState,
         enableDismissFromStartToEnd = true,
         enableDismissFromEndToStart = true,
-        backgroundContent = {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp, 8.dp),
-                horizontalArrangement = when (dismissState.dismissDirection) {
-                    SwipeToDismissBoxValue.StartToEnd -> Arrangement.Start
-                    SwipeToDismissBoxValue.EndToStart -> Arrangement.End
-                    else -> Arrangement.End
-                },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                when (dismissState.dismissDirection) {
-                    SwipeToDismissBoxValue.StartToEnd -> {
-                        Icon(
-                            painterResource(R.drawable.ic_edit_note),
-                            contentDescription = "Edit",
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                    SwipeToDismissBoxValue.EndToStart -> {
-                        Icon(
-                            painterResource(R.drawable.ic_delete),
-                            contentDescription = "Delete",
-                            tint = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                    else -> {
-                        Icon(
-                            painterResource(R.drawable.ic_delete),
-                            contentDescription = "Delete",
-                            tint = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                }
-            }
-        },
+        backgroundContent = { DismissBackground() },
     ) {
         Card(
             modifier = Modifier

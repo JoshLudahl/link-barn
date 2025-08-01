@@ -92,6 +92,7 @@ import com.softklass.linkbarn.MainActivity
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
+import com.softklass.linkbarn.ui.partials.DismissBackground
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -194,7 +195,6 @@ fun EnterAlwaysTopAppBar(
         },
         bottomBar = {
             BottomAppBar(
-                // modifier = Modifier.height(56.dp),
                 containerColor = MaterialTheme.colorScheme.surface,
                 actions = {
                     IconButton(onClick = { onNavigateToCategories() }) {
@@ -210,7 +210,6 @@ fun EnterAlwaysTopAppBar(
                             painter = painterResource(R.drawable.ic_settings),
                             contentDescription = "Settings",
                             tint = MaterialTheme.colorScheme.onSurface,
-                            // modifier = Modifier.size(24.dp),
                         )
                     }
                 },
@@ -231,22 +230,19 @@ fun EnterAlwaysTopAppBar(
         },
         content = { innerPadding ->
             Box(modifier = Modifier.fillMaxSize()) {
-                // Fill the available space
                 Column(
                     modifier = Modifier
                         .padding(innerPadding)
-                        .fillMaxSize(), // Ensure Column fills the Box
+                        .fillMaxSize(),
                 ) {
-                    // val state = scrollBehavior.state // You can still access this if needed
                     CollapsingHeader(viewModel = viewModel, isTopAppBarOffScreen = isTopAppBarOffScreen)
                     LinksContent(
                         viewModel = viewModel,
-                        listState = listState, // Pass the listState here
+                        listState = listState,
                         openBottomSheet = openBottomSheet,
                     )
                 }
 
-                // "Scroll to Top" FAB
                 AnimatedVisibility(
                     visible = isTopAppBarOffScreen,
                     enter = fadeIn(),
@@ -538,19 +534,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
         enableDismissFromStartToEnd = false,
         enableDismissFromEndToStart = true,
         backgroundContent = {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(12.dp, 8.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_delete),
-                    contentDescription = "Delete",
-                    tint = MaterialTheme.colorScheme.error,
-                )
-            }
+            DismissBackground()
         },
     ) {
         ElevatedCard(
