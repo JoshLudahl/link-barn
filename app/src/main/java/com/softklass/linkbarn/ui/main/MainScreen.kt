@@ -2,6 +2,7 @@ package com.softklass.linkbarn.ui.main
 
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -237,7 +238,7 @@ fun EnterAlwaysTopAppBar(
                         .fillMaxSize(), // Ensure Column fills the Box
                 ) {
                     // val state = scrollBehavior.state // You can still access this if needed
-                    CollapsingHeader(viewModel = viewModel)
+                    CollapsingHeader(viewModel = viewModel, isTopAppBarOffScreen = isTopAppBarOffScreen)
                     LinksContent(
                         viewModel = viewModel,
                         listState = listState, // Pass the listState here
@@ -276,7 +277,7 @@ fun EnterAlwaysTopAppBar(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun CollapsingHeader(viewModel: MainViewModel) {
+private fun CollapsingHeader(viewModel: MainViewModel, isTopAppBarOffScreen: Boolean) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -288,6 +289,7 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(ToggleButtonDefaults.IconSpacing),
+            modifier = Modifier.animateContentSize(),
         ) {
             if (allLinks.isNotEmpty()) {
                 options.forEachIndexed { index, label ->
@@ -336,13 +338,15 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
         val selectedCategoryIds by viewModel.selectedCategoryIds.collectAsState()
 
         if (allCategories.isNotEmpty()) {
-            Text(
-                text = "Filter by category".uppercase(),
-                style = MaterialTheme.typography.titleSmallEmphasized,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp),
-            )
+            if (!isTopAppBarOffScreen) {
+                Text(
+                    text = "Filter by category".uppercase(),
+                    style = MaterialTheme.typography.titleSmallEmphasized,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                )
+            }
 
             LazyRow(
                 modifier = Modifier
@@ -470,7 +474,7 @@ private fun LinksContent(
                     visible = !deletingLinkIds.contains(link.id),
                     exit = slideOutHorizontally(
                         targetOffsetX = { -it },
-                        animationSpec = tween(300),
+                        animationSpec = tween(500),
                     ),
                 ) {
                     LinkItem(link = link, viewModel = viewModel)
