@@ -64,6 +64,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -103,8 +104,8 @@ fun MainScreen(
     val coroutineScope = rememberCoroutineScope()
 
     // Track if header should be visible based on scroll position
-    val isHeaderVisible = listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < 100
-    val showScrollToTopButton = listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 100
+    val isHeaderVisible = remember { derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < 100 } }
+    val showScrollToTopButton = remember { derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset >= 100 } }
 
     // Snackbar state handling
     val snackbarState by viewModel.snackbarState.collectAsState()
@@ -206,7 +207,7 @@ fun MainScreen(
             ) {
                 // Collapsing header
                 AnimatedVisibility(
-                    visible = isHeaderVisible,
+                    visible = isHeaderVisible.value,
                     enter = slideInVertically(
                         initialOffsetY = { -it },
                         animationSpec = tween(300),
@@ -229,7 +230,7 @@ fun MainScreen(
 
             // Scroll to top button
             AnimatedVisibility(
-                visible = showScrollToTopButton,
+                visible = showScrollToTopButton.value,
                 enter = slideInVertically(
                     initialOffsetY = { it },
                     animationSpec = tween(300),
