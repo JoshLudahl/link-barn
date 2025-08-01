@@ -3,9 +3,12 @@ package com.softklass.linkbarn.ui.main
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,12 +19,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
@@ -57,6 +63,7 @@ import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -150,10 +157,6 @@ fun MainScreen(
     )
 }
 
-/**
- * A sample for a small [TopAppBar] that collapses when the content is scrolled up, and appears when
- * the content scrolled down.
- */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun EnterAlwaysTopAppBar(
@@ -163,6 +166,15 @@ fun EnterAlwaysTopAppBar(
     openBottomSheet: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState() // Add this for controlling LazyColumn scroll
+
+    val isTopAppBarOffScreen by remember {
+        derivedStateOf {
+            scrollBehavior.state.heightOffset < -5
+        }
+    }
+
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -217,14 +229,46 @@ fun EnterAlwaysTopAppBar(
             )
         },
         content = { innerPadding ->
-            Column(
-                modifier = Modifier.padding(innerPadding),
-            ) {
-                CollapsingHeader(viewModel = viewModel)
-                LinksContent(
-                    viewModel = viewModel,
-                    openBottomSheet = openBottomSheet,
-                )
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Fill the available space
+                Column(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize(), // Ensure Column fills the Box
+                ) {
+                    // val state = scrollBehavior.state // You can still access this if needed
+                    CollapsingHeader(viewModel = viewModel)
+                    LinksContent(
+                        viewModel = viewModel,
+                        listState = listState, // Pass the listState here
+                        openBottomSheet = openBottomSheet,
+                    )
+                }
+
+                // "Scroll to Top" FAB
+                AnimatedVisibility(
+                    visible = isTopAppBarOffScreen,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd) // Position at bottom-right
+                        .padding(innerPadding) // Respect Scaffold padding
+                        .padding(16.dp), // Additional padding for the FAB
+                ) {
+                    FloatingActionButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(0) // Scroll LazyColumn to top
+                                // Optionally, also expand the TopAppBar fully
+                                scrollBehavior.state.heightOffset = 0f
+                            }
+                        },
+                        containerColor = MaterialTheme.colorScheme.secondary,
+                        contentColor = MaterialTheme.colorScheme.onSecondary,
+                    ) {
+                        Icon(Icons.Filled.ArrowUpward, "Scroll to top")
+                    }
+                }
             }
         },
     )
@@ -260,11 +304,11 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
                         modifier = Modifier.weight(1f),
 
                         shapes =
-                        when (index) {
-                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                        },
+                            when (index) {
+                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                            },
                     ) {
                         if (currentFilter == label) {
                             Icon(
@@ -346,7 +390,7 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
 @Composable
 private fun LinksContent(
     viewModel: MainViewModel,
-    // listState: LazyListState,
+    listState: LazyListState,
     openBottomSheet: () -> Unit,
 ) {
     val links by viewModel.links.collectAsState()
@@ -354,7 +398,7 @@ private fun LinksContent(
     val currentFilter by viewModel.currentFilter.collectAsState()
 
     LazyColumn(
-        // state = listState,
+        state = listState,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -555,10 +599,10 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                         singleLine = true,
                         colors = TextFieldDefaults.colors(),
                         keyboardOptions =
-                        KeyboardOptions(
-                            imeAction = ImeAction.Done,
-                            capitalization = KeyboardCapitalization.Sentences,
-                        ),
+                            KeyboardOptions(
+                                imeAction = ImeAction.Done,
+                                capitalization = KeyboardCapitalization.Sentences,
+                            ),
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -797,7 +841,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                                     containerColor = MaterialTheme.colorScheme.primary,
                                 ),
 
-                            ) {
+                                ) {
                                 Icon(
                                     painterResource(R.drawable.ic_share),
                                     contentDescription = "Share link",
