@@ -3,16 +3,10 @@ package com.softklass.linkbarn.ui.main
 import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -50,7 +43,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
@@ -59,12 +51,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,6 +68,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -82,6 +76,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
@@ -100,12 +95,7 @@ fun MainScreen(
     onNavigateToCategories: () -> Unit = {},
 ) {
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    val listState = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
-
-    // Track if header should be visible based on scroll position
-    val isHeaderVisible = remember { derivedStateOf { listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset < 100 } }
-    val showScrollToTopButton = remember { derivedStateOf { listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset >= 100 } }
+    rememberCoroutineScope()
 
     // Snackbar state handling
     val snackbarState by viewModel.snackbarState.collectAsState()
@@ -153,10 +143,42 @@ fun MainScreen(
         onOpenBottomSheetChange = { openBottomSheet = it },
     )
 
+    EnterAlwaysTopAppBar(
+        viewModel = viewModel,
+        onNavigateToSettings = onNavigateToSettings,
+        onNavigateToCategories = onNavigateToCategories,
+        openBottomSheet = { openBottomSheet = true },
+    )
+}
+
+/**
+ * A sample for a small [TopAppBar] that collapses when the content is scrolled up, and appears when
+ * the content scrolled down.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun EnterAlwaysTopAppBar(
+    viewModel: MainViewModel,
+    onNavigateToSettings: () -> Unit = {},
+    onNavigateToCategories: () -> Unit = {},
+    openBottomSheet: () -> Unit,
+) {
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.main_screen_title),
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                subtitle = { Text("Your saved links.", maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                scrollBehavior = scrollBehavior,
+            )
         },
         bottomBar = {
             BottomAppBar(
@@ -182,7 +204,7 @@ fun MainScreen(
                 },
                 floatingActionButton = {
                     FloatingActionButton(
-                        onClick = { openBottomSheet = true },
+                        onClick = openBottomSheet,
                         containerColor = MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(16.dp),
                     ) {
@@ -195,72 +217,18 @@ fun MainScreen(
                 },
             )
         },
-    ) { padding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-        ) {
-            // Main content with LazyColumn
+        content = { innerPadding ->
             Column(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.padding(innerPadding),
             ) {
-                // Collapsing header
-                AnimatedVisibility(
-                    visible = isHeaderVisible.value,
-                    enter = slideInVertically(
-                        initialOffsetY = { -it },
-                        animationSpec = tween(300),
-                    ) + fadeIn(animationSpec = tween(300)),
-                    exit = slideOutVertically(
-                        targetOffsetY = { -it },
-                        animationSpec = tween(300),
-                    ) + fadeOut(animationSpec = tween(300)),
-                ) {
-                    CollapsingHeader(viewModel = viewModel)
-                }
-
-                // Links list
+                CollapsingHeader(viewModel = viewModel)
                 LinksContent(
                     viewModel = viewModel,
-                    listState = listState,
-                    openBottomSheet = { openBottomSheet = true },
+                    openBottomSheet = openBottomSheet,
                 )
             }
-
-            // Scroll to top button
-            AnimatedVisibility(
-                visible = showScrollToTopButton.value,
-                enter = slideInVertically(
-                    initialOffsetY = { it },
-                    animationSpec = tween(300),
-                ) + fadeIn(animationSpec = tween(300)),
-                exit = slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(300),
-                ) + fadeOut(animationSpec = tween(300)),
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp),
-            ) {
-                FloatingActionButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(0)
-                        }
-                    },
-                    containerColor = MaterialTheme.colorScheme.secondary,
-                    shape = RoundedCornerShape(16.dp),
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_up),
-                        contentDescription = "Scroll to top",
-                        tint = MaterialTheme.colorScheme.onSecondary,
-                    )
-                }
-            }
-        }
-    }
+        },
+    )
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -271,28 +239,6 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
     ) {
-        // Title section
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(intrinsicSize = IntrinsicSize.Max),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(
-                modifier = Modifier.weight(2f),
-            ) {
-                Text(
-                    fontSize = 22.sp,
-                    text = stringResource(id = R.string.main_screen_title),
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Text(text = "Your saved links.")
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
         val allLinks by viewModel.allLinks.collectAsState()
         val options = listOf(LinkFilter.ALL, LinkFilter.VISITED, LinkFilter.UNVISITED)
         val currentFilter by viewModel.currentFilter.collectAsState()
@@ -327,8 +273,6 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
                                 contentDescription = "Localized description",
                             )
                         }
-
-                        // Spacer(Modifier.size(ToggleButtonDefaults.IconSpacing))
 
                         val text = when (label) {
                             LinkFilter.ALL -> "All"
@@ -403,7 +347,7 @@ private fun CollapsingHeader(viewModel: MainViewModel) {
 @Composable
 private fun LinksContent(
     viewModel: MainViewModel,
-    listState: LazyListState,
+    // listState: LazyListState,
     openBottomSheet: () -> Unit,
 ) {
     val links by viewModel.links.collectAsState()
@@ -411,7 +355,7 @@ private fun LinksContent(
     val currentFilter by viewModel.currentFilter.collectAsState()
 
     LazyColumn(
-        state = listState,
+        // state = listState,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
@@ -781,7 +725,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
                             fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            overflow = TextOverflow.Ellipsis,
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(
@@ -938,7 +882,10 @@ fun CategoryDialog(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         isError = errorMessage != null,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, capitalization = KeyboardCapitalization.Sentences),
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done,
+                            capitalization = KeyboardCapitalization.Sentences,
+                        ),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 viewModel.addCategory(categoryName)
