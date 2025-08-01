@@ -27,6 +27,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -40,6 +41,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,6 +56,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.ui.partials.DismissBackground
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,14 +86,16 @@ fun CategoriesScreen(
                     withDismissAction = true,
                 )
                 when (result) {
-                    androidx.compose.material3.SnackbarResult.ActionPerformed -> {
+                    SnackbarResult.ActionPerformed -> {
                         viewModel.undoDelete()
                     }
-                    androidx.compose.material3.SnackbarResult.Dismissed -> {
+
+                    SnackbarResult.Dismissed -> {
                         viewModel.hideSnackbar()
                     }
                 }
             }
+
             is SnackbarState.Hidden -> {
                 // Do nothing
             }
@@ -167,7 +172,9 @@ fun CategoriesScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 8.dp).padding(horizontal = 32.dp),
+                            modifier = Modifier
+                                .padding(top = 8.dp)
+                                .padding(horizontal = 32.dp),
                         )
                     }
                 }
@@ -221,35 +228,25 @@ fun CategoryItem(
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         initialValue = SwipeToDismissBoxValue.Settled,
-        confirmValueChange = { dismissValue ->
-            when (dismissValue) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onEdit()
-                    false // Don't confirm the dismissal, just trigger the action
-                }
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onDelete()
-                    false // Don't confirm the dismissal, just trigger the action
-                }
-                else -> false
-            }
-        },
-        positionalThreshold = { distance -> distance * 0.25f },
+        positionalThreshold = { distance -> distance * .25f },
     )
 
-    // Reset the dismiss state after the action is triggered
-    LaunchedEffect(dismissState.currentValue, category.id) {
-        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
-            // Wait for the swipe animation to complete
-            kotlinx.coroutines.delay(100)
-            dismissState.reset()
-        }
-    }
-
+    val scope = rememberCoroutineScope()
     SwipeToDismissBox(
         state = dismissState,
         enableDismissFromStartToEnd = true,
         enableDismissFromEndToStart = true,
+        onDismiss = {
+            when (it) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    scope.launch { dismissState.reset() }
+                    onEdit()
+                }
+
+                SwipeToDismissBoxValue.EndToStart -> onDelete()
+                else -> {}
+            }
+        },
         backgroundContent = { DismissBackground() },
     ) {
         Card(
@@ -322,12 +319,14 @@ fun CategoryDialog(
             is CategoryUiState.Error -> {
                 errorMessage = (categoryUiState as CategoryUiState.Error).message
             }
+
             is CategoryUiState.Success -> {
                 errorMessage = null
                 categoryName = ""
                 onDismiss()
                 viewModel.resetCategoryState()
             }
+
             else -> {
                 errorMessage = null
             }
@@ -358,7 +357,10 @@ fun CategoryDialog(
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
                         isError = errorMessage != null,
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done, capitalization = KeyboardCapitalization.Sentences),
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Done,
+                            capitalization = KeyboardCapitalization.Sentences,
+                        ),
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 if (isEditing) {
