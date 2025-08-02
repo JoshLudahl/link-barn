@@ -3,6 +3,7 @@ package com.softklass.linkbarn.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.softklass.linkbarn.BuildConfig
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.CategoryRepository
@@ -114,6 +115,12 @@ class MainViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
     )
+
+    init {
+        if (BuildConfig.DEBUG) {
+            // populatetestdata()
+        }
+    }
 
     fun addLink(name: String, url: String, categoryNames: List<String> = emptyList()) {
         viewModelScope.launch(dispatcher) {
@@ -376,6 +383,17 @@ class MainViewModel @Inject constructor(
 
     fun clearSharedUrl() {
         _sharedUrl.value = null
+    }
+
+    fun populatetestdata() {
+        viewModelScope.launch(dispatcher) {
+            addCategory("A")
+            addCategory("B")
+            addCategory("C")
+            addLink("A", "https://www.a.com")
+            addLink("B", "https://www.b.com")
+            addLink("C", "https://www.c.com")
+        }
     }
 }
 
