@@ -169,7 +169,8 @@ fun EnterAlwaysTopAppBar(
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val coroutineScope = rememberCoroutineScope()
-    val listState = rememberLazyListState() // Add this for controlling LazyColumn scroll
+    val listState = rememberLazyListState()
+    val links by viewModel.links.collectAsState()
 
     val isTopAppBarOffScreen by remember {
         derivedStateOf {
@@ -240,6 +241,10 @@ fun EnterAlwaysTopAppBar(
                         viewModel = viewModel,
                         listState = listState,
                         openBottomSheet = openBottomSheet,
+                        onDelete = { link ->
+                            viewModel.deleteLink(link)
+                        },
+                        links = links,
                     )
                 }
 
@@ -392,8 +397,9 @@ private fun LinksContent(
     viewModel: MainViewModel,
     listState: LazyListState,
     openBottomSheet: () -> Unit,
+    onDelete: (Link) -> Unit,
+    links: List<Link> = emptyList(),
 ) {
-    val links by viewModel.links.collectAsState()
     val deletingLinkIds by viewModel.deletingLinkIds.collectAsState()
     val currentFilter by viewModel.currentFilter.collectAsState()
 
@@ -473,7 +479,7 @@ private fun LinksContent(
                         animationSpec = tween(500),
                     ),
                 ) {
-                    LinkItem(link = link, viewModel = viewModel)
+                    LinkItem(link = link, viewModel = viewModel, onDelete = onDelete)
                 }
             }
         }
@@ -481,9 +487,9 @@ private fun LinksContent(
 }
 
 @Composable
-fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
+fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
     val context = LocalContext.current
-    rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
 
     // State to track if the item is in edit mode
     var isEditing by rememberSaveable { mutableStateOf(false) }
@@ -509,25 +515,17 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
 
     val dismissState = rememberSwipeToDismissBoxState(
         initialValue = SwipeToDismissBoxValue.Settled,
-        confirmValueChange = { dismissValue ->
-            if (dismissValue == SwipeToDismissBoxValue.EndToStart) {
-                viewModel.deleteLink(link)
-                false // Don't confirm the dismissal, just trigger the action
-            } else {
-                false
-            }
-        },
-        positionalThreshold = { distance -> distance * 0.01f },
+        positionalThreshold = { distance -> distance * 0.25f },
     )
 
-    // Reset the dismiss state after the action is triggered
-    LaunchedEffect(dismissState.currentValue, link.id) {
-        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
-            // Wait for the swipe animation to complete
-            kotlinx.coroutines.delay(100)
-            dismissState.reset()
-        }
-    }
+//    // Reset the dismiss state after the action is triggered
+//    LaunchedEffect(dismissState.currentValue, link.id) {
+//        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
+//            // Wait for the swipe animation to complete
+//            kotlinx.coroutines.delay(100)
+//            dismissState.reset()
+//        }
+//    }
 
     SwipeToDismissBox(
         state = dismissState,
@@ -535,6 +533,12 @@ fun LinkItem(link: Link, viewModel: MainViewModel = hiltViewModel()) {
         enableDismissFromEndToStart = true,
         backgroundContent = {
             DismissBackground()
+        },
+        onDismiss = {
+            when (it) {
+                SwipeToDismissBoxValue.EndToStart -> onDelete(link)
+                else -> { }
+            }
         },
     ) {
         ElevatedCard(
