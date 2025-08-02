@@ -29,6 +29,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
@@ -372,7 +373,7 @@ private fun CollapsingHeader(viewModel: MainViewModel, isTopAppBarOffScreen: Boo
                         leadingIcon = if (selectedCategoryIds.contains(category.id)) {
                             {
                                 Icon(
-                                    painter = painterResource(R.drawable.ic_check),
+                                    imageVector = Icons.Rounded.Check,
                                     contentDescription = "Done icon",
                                     modifier = Modifier.size(FilterChipDefaults.IconSize),
                                 )
