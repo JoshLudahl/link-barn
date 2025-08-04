@@ -1,5 +1,9 @@
 package com.softklass.linkbarn.ui.categories
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -56,7 +62,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.ui.partials.DismissBackground
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -231,67 +237,95 @@ fun CategoryItem(
         positionalThreshold = { distance -> distance * .25f },
     )
 
-    val scope = rememberCoroutineScope()
-    SwipeToDismissBox(
-        state = dismissState,
-        enableDismissFromStartToEnd = true,
-        enableDismissFromEndToStart = true,
-        onDismiss = {
-            when (it) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    scope.launch { dismissState.reset() }
-                    onEdit()
-                }
+    var isDismissed by remember { mutableStateOf(false) }
+    var shouldEdit by remember { mutableStateOf(false) }
 
-                SwipeToDismissBoxValue.EndToStart -> onDelete()
-                else -> {}
-            }
-        },
-        backgroundContent = { DismissBackground() },
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(key1 = isDismissed) {
+        if (isDismissed) {
+            delay(500L)
+            onDelete()
+        }
+    }
+
+    LaunchedEffect(key1 = shouldEdit) {
+        if (shouldEdit) {
+            onEdit()
+            dismissState.reset()
+            shouldEdit = false
+        }
+    }
+
+    AnimatedVisibility(
+        visible = !isDismissed,
+        exit = shrinkVertically(
+            animationSpec = tween(durationMillis = 500),
+            shrinkTowards = Alignment.Top,
+        ) + fadeOut(),
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-            ),
+        SwipeToDismissBox(
+            state = dismissState,
+            enableDismissFromStartToEnd = true,
+            enableDismissFromEndToStart = true,
+            onDismiss = {
+                when (it) {
+                    SwipeToDismissBoxValue.StartToEnd -> {
+                        shouldEdit = true
+                    }
+
+                    SwipeToDismissBoxValue.EndToStart -> {
+                        isDismissed = true
+                    }
+                    else -> {}
+                }
+            },
+            backgroundContent = { DismissBackground(leftIcon = Icons.Rounded.Edit) },
         ) {
-            Row(
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .padding(horizontal = 16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                ),
             ) {
-                // Category icon (rounded)
-                Card(
-                    modifier = Modifier.size(40.dp),
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                    ),
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center,
+                    // Category icon (rounded)
+                    Card(
+                        modifier = Modifier.size(40.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary,
+                        ),
                     ) {
-                        Text(
-                            text = category.name.take(1).uppercase(),
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            fontWeight = FontWeight.Bold,
-                        )
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text(
+                                text = category.name.take(1).uppercase(),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
                     }
-                }
 
-                // Category name
-                Text(
-                    text = category.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(start = 16.dp),
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
+                    // Category name
+                    Text(
+                        text = category.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(start = 16.dp),
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             }
         }
     }

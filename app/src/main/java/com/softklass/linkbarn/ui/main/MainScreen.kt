@@ -4,8 +4,10 @@ import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -340,7 +342,15 @@ private fun CollapsingHeader(viewModel: MainViewModel, isTopAppBarOffScreen: Boo
         val selectedCategoryIds by viewModel.selectedCategoryIds.collectAsState()
 
         if (allCategories.isNotEmpty()) {
-            if (!isTopAppBarOffScreen) {
+            AnimatedVisibility(
+                visible = !isTopAppBarOffScreen,
+                enter = expandVertically(
+                    animationSpec = tween(500),
+                ) + fadeIn(),
+                exit = shrinkVertically(
+                    animationSpec = tween(500),
+                ) + fadeOut(),
+            ) {
                 Text(
                     text = "Filter by category".uppercase(),
                     style = MaterialTheme.typography.titleSmallEmphasized,

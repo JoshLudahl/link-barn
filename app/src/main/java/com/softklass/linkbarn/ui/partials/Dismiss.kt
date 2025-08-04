@@ -17,11 +17,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DismissBackground() {
+fun DismissBackground(
+    leftIcon: ImageVector = Icons.Rounded.Archive,
+    rightIcon: ImageVector = Icons.Rounded.Delete,
+) {
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -32,14 +36,14 @@ fun DismissBackground() {
 
     ) {
         Icon(
-            imageVector = Icons.Rounded.Archive,
+            imageVector = leftIcon,
             contentDescription = "Archive",
             tint = MaterialTheme.colorScheme.primary,
         )
         Spacer(modifier = Modifier)
         Icon(
             // make sure add archive.xml resource to drawable folder
-            imageVector = Icons.Rounded.Delete,
+            imageVector = rightIcon,
             contentDescription = "Delete",
             tint = MaterialTheme.colorScheme.error,
         )
