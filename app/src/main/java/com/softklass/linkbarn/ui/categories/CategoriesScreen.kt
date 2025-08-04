@@ -141,60 +141,16 @@ fun CategoriesScreen(
                 .padding(paddingValues),
         ) {
             if (categories.isEmpty()) {
-                // Empty state
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_empty_state),
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = "No categories yet",
-                            style = MaterialTheme.typography.headlineSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 16.dp),
-                        )
-                        Text(
-                            text = "Create your first category to organize your links",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier
-                                .padding(top = 8.dp)
-                                .padding(horizontal = 32.dp),
-                        )
-                    }
-                }
+                EmptyState()
             } else {
-                // Categories list
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    items(categories, key = { it.id }) { category ->
-
-                        SwipeToDismissContainer(
-                            item = category.name,
-                            onSwipeRightToLeft = { viewModel.deleteCategory(category) },
-                            onSwipeLeftToRight = {
-                                categoryToEdit.value = category
-                                showEditCategoryDialog.value = true
-                            },
-                        ) {
-                            CategoryItem(
-                                category = category,
-                            )
-                        }
-                    }
-                }
+                ShowList(
+                    categories = categories,
+                    onSwipeRightToLeft = { viewModel.deleteCategory(it) },
+                    onSwipeLeftToRight = {
+                        categoryToEdit.value = it
+                        showEditCategoryDialog.value = true
+                    },
+                )
             }
         }
     }
@@ -379,5 +335,64 @@ fun CategoryDialog(
                 }
             },
         )
+    }
+}
+
+@Composable
+fun ShowList(
+    categories: List<Category> = emptyList(),
+    onSwipeRightToLeft: (Category) -> Unit,
+    onSwipeLeftToRight: (Category) -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        items(categories, key = { it.id }) { category ->
+            SwipeToDismissContainer(
+                item = category.name,
+                onSwipeRightToLeft = { onSwipeRightToLeft(category) },
+                onSwipeLeftToRight = { onSwipeLeftToRight(category) },
+            ) {
+                CategoryItem(
+                    category = category,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun EmptyState() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_empty_state),
+                contentDescription = null,
+                modifier = Modifier.size(64.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = "No categories yet",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 16.dp),
+            )
+            Text(
+                text = "Create your first category to organize your links",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(top = 8.dp)
+                    .padding(horizontal = 32.dp),
+            )
+        }
     }
 }
