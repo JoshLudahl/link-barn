@@ -117,7 +117,7 @@ fun DismissBackground(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
 
-        ) {
+    ) {
         Icon(
             imageVector = leftIcon,
             contentDescription = "Archive",
