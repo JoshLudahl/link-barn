@@ -240,7 +240,7 @@ fun CategoryItem(
     var isDismissed by remember { mutableStateOf(false) }
     var shouldEdit by remember { mutableStateOf(false) }
 
-    val scope = rememberCoroutineScope()
+    rememberCoroutineScope()
 
     LaunchedEffect(key1 = isDismissed) {
         if (isDismissed) {
@@ -277,6 +277,7 @@ fun CategoryItem(
                     SwipeToDismissBoxValue.EndToStart -> {
                         isDismissed = true
                     }
+
                     else -> {}
                 }
             },
