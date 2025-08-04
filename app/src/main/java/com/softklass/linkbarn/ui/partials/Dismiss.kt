@@ -34,16 +34,15 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
-
 @Composable
 fun <T> SwipeToDismissContainer(
     item: T,
-    onSwipeLeft: (T) -> Unit,
-    onSwipeRight: (T) -> Unit,
+    onSwipeLeftToRight: (T) -> Unit,
+    onSwipeRightToLeft: (T) -> Unit,
     animationDuration: Long = 500L,
-    content: @Composable (T) -> Unit,
     leftIcon: ImageVector = Icons.Rounded.Edit,
     rightIcon: ImageVector = Icons.Rounded.Delete,
+    content: @Composable (T) -> Unit,
 ) {
     val dismissState = rememberSwipeToDismissBoxState(
         initialValue = SwipeToDismissBoxValue.Settled,
@@ -53,25 +52,25 @@ fun <T> SwipeToDismissContainer(
     var isSwipeLeftToRight by remember { mutableStateOf(false) }
     var isSwipeRightToLeft by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = isSwipeLeftToRight) {
-        if (isSwipeLeftToRight) {
+    LaunchedEffect(key1 = isSwipeRightToLeft) {
+        if (isSwipeRightToLeft) {
             delay(animationDuration)
-            onSwipeLeft(item)
+            onSwipeRightToLeft(item)
         }
     }
 
-    LaunchedEffect(key1 = isSwipeRightToLeft) {
-        if (isSwipeRightToLeft) {
-            onSwipeRight
+    LaunchedEffect(key1 = isSwipeLeftToRight) {
+        if (isSwipeLeftToRight) {
+            onSwipeLeftToRight(item)
             dismissState.reset()
-            isSwipeRightToLeft = false
+            isSwipeLeftToRight = false
         }
     }
 
     AnimatedVisibility(
         visible = !isSwipeRightToLeft,
         exit = shrinkVertically(
-            animationSpec = tween(durationMillis = 500),
+            animationSpec = tween(durationMillis = animationDuration.toInt()),
             shrinkTowards = Alignment.Top,
         ) + fadeOut(),
     ) {
@@ -118,7 +117,7 @@ fun DismissBackground(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
 
-        ) {
+    ) {
         Icon(
             imageVector = leftIcon,
             contentDescription = "Archive",

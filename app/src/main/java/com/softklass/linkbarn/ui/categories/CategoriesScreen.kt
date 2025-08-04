@@ -1,9 +1,5 @@
 package com.softklass.linkbarn.ui.categories
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,8 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -34,12 +28,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -60,8 +51,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
-import com.softklass.linkbarn.ui.partials.DismissBackground
-import kotlinx.coroutines.delay
+import com.softklass.linkbarn.ui.partials.SwipeToDismissContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -76,9 +66,9 @@ fun CategoriesScreen(
     // Filter out categories that are pending deletion
     val categories = allCategories.filter { category -> category.id !in pendingDeletions }
     val snackbarHostState = remember { SnackbarHostState() }
-    var showAddCategoryDialog by remember { mutableStateOf(false) }
-    var showEditCategoryDialog by remember { mutableStateOf(false) }
-    var categoryToEdit by remember { mutableStateOf<Category?>(null) }
+    val showAddCategoryDialog = remember { mutableStateOf(false) }
+    val showEditCategoryDialog = remember { mutableStateOf(false) }
+    val categoryToEdit = remember { mutableStateOf<Category?>(null) }
 
     // Handle snackbar visibility
     LaunchedEffect(snackbarState) {
@@ -130,7 +120,7 @@ fun CategoriesScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddCategoryDialog = true },
+                onClick = { showAddCategoryDialog.value = true },
                 containerColor = MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(16.dp),
             ) {
@@ -190,14 +180,19 @@ fun CategoriesScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     items(categories, key = { it.id }) { category ->
-                        CategoryItem(
-                            category = category,
-                            onDelete = { viewModel.deleteCategory(category) },
-                            onEdit = {
-                                categoryToEdit = category
-                                showEditCategoryDialog = true
+
+                        SwipeToDismissContainer(
+                            item = category.name,
+                            onSwipeRightToLeft = { viewModel.deleteCategory(category) },
+                            onSwipeLeftToRight = {
+                                categoryToEdit.value = category
+                                showEditCategoryDialog.value = true
                             },
-                        )
+                        ) {
+                            CategoryItem(
+                                category = category,
+                            )
+                        }
                     }
                 }
             }
@@ -207,20 +202,20 @@ fun CategoriesScreen(
     // Add category dialog
     CategoryDialog(
         viewModel = viewModel,
-        showDialog = showAddCategoryDialog,
-        onDismiss = { showAddCategoryDialog = false },
+        showDialog = showAddCategoryDialog.value,
+        onDismiss = { showAddCategoryDialog.value = false },
         categoryToEdit = null,
     )
 
     // Edit category dialog
     CategoryDialog(
         viewModel = viewModel,
-        showDialog = showEditCategoryDialog,
+        showDialog = showEditCategoryDialog.value,
         onDismiss = {
-            showEditCategoryDialog = false
-            categoryToEdit = null
+            showEditCategoryDialog.value = false
+            categoryToEdit.value = null
         },
-        categoryToEdit = categoryToEdit,
+        categoryToEdit = categoryToEdit.value,
     )
 }
 
@@ -228,103 +223,50 @@ fun CategoriesScreen(
 @Composable
 fun CategoryItem(
     category: Category,
-    onDelete: () -> Unit,
-    onEdit: () -> Unit,
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        initialValue = SwipeToDismissBoxValue.Settled,
-        positionalThreshold = { distance -> distance * .25f },
-    )
-
-    var isDismissed by remember { mutableStateOf(false) }
-    var shouldEdit by remember { mutableStateOf(false) }
-
-    LaunchedEffect(key1 = isDismissed) {
-        if (isDismissed) {
-            delay(500L)
-            onDelete()
-        }
-    }
-
-    LaunchedEffect(key1 = shouldEdit) {
-        if (shouldEdit) {
-            onEdit()
-            dismissState.reset()
-            shouldEdit = false
-        }
-    }
-
-    AnimatedVisibility(
-        visible = !isDismissed,
-        exit = shrinkVertically(
-            animationSpec = tween(durationMillis = 500),
-            shrinkTowards = Alignment.Top,
-        ) + fadeOut(),
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        ),
     ) {
-        SwipeToDismissBox(
-            state = dismissState,
-            enableDismissFromStartToEnd = true,
-            enableDismissFromEndToStart = true,
-            onDismiss = {
-                when (it) {
-                    SwipeToDismissBoxValue.StartToEnd -> {
-                        shouldEdit = true
-                    }
-
-                    SwipeToDismissBoxValue.EndToStart -> {
-                        isDismissed = true
-                    }
-
-                    else -> {}
-                }
-            },
-            backgroundContent = { DismissBackground(leftIcon = Icons.Rounded.Edit) },
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Category icon (rounded)
             Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
+                modifier = Modifier.size(40.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                 ),
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
                 ) {
-                    // Category icon (rounded)
-                    Card(
-                        modifier = Modifier.size(40.dp),
-                        shape = RoundedCornerShape(20.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                        ),
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Text(
-                                text = category.name.take(1).uppercase(),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                    }
-
-                    // Category name
                     Text(
-                        text = category.name,
+                        text = category.name.take(1).uppercase(),
                         style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(start = 16.dp),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        fontWeight = FontWeight.Bold,
                     )
                 }
             }
+
+            // Category name
+            Text(
+                text = category.name,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(start = 16.dp),
+                color = MaterialTheme.colorScheme.onSurface,
+            )
         }
     }
 }
