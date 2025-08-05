@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +47,7 @@ fun DashboardScreen(
 
                                 // Re-enable the button after a delay (if needed)
                                 scope.launch {
-                                    kotlinx.coroutines.delay(500) // 500ms delay
+                                    delay(500) // 500ms delay
                                     isBackButtonEnabled = true
                                 }
                             }
