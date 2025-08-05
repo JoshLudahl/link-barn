@@ -56,6 +56,8 @@ fun <T> SwipeToDismissContainer(
         if (isSwipeRightToLeft) {
             delay(animationDuration)
             onSwipeRightToLeft(item)
+            dismissState.reset()
+            isSwipeRightToLeft = false
         }
     }
 

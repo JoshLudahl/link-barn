@@ -1,10 +1,12 @@
 package com.softklass.linkbarn.ui.categories
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.repository.CategoryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +14,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class CategoriesViewModel @Inject constructor(
@@ -86,9 +87,9 @@ class CategoriesViewModel @Inject constructor(
     fun undoDelete() {
         viewModelScope.launch(dispatcher) {
             pendingCategoryRemoval.value?.let { category ->
-                categoryRepository.insertCategory(category)
+                Log.d("CategoriesViewModel", "Undoing delete for category: ${category.name}")
+                addCategory(category.name)
             }
-            pendingCategoryRemoval.value = null
         }
     }
 
