@@ -68,7 +68,7 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(padding),
         ) {
-// it
+            Text("Welcome to the Dashboard!")
         }
     }
 }
