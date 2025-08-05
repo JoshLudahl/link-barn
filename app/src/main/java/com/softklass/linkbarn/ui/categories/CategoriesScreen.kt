@@ -25,14 +25,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -59,50 +55,13 @@ fun CategoriesScreen(
     onNavigateBack: () -> Unit,
     viewModel: CategoriesViewModel = hiltViewModel(),
 ) {
-    val allCategories by viewModel.allCategories.collectAsState(initial = emptyList())
-    val pendingDeletions by viewModel.pendingDeletions.collectAsState()
-    val snackbarState by viewModel.snackbarState.collectAsState()
+    // val pendingDeletions by viewModel.pendingDeletions.collectAsState()
 
     // Filter out categories that are pending deletion
-    val categories = allCategories.filter { category -> category.id !in pendingDeletions }
-    val snackbarHostState = remember { SnackbarHostState() }
+    val categories by viewModel.allCategories.collectAsState(initial = emptyList())
     val showAddCategoryDialog = remember { mutableStateOf(false) }
     val showEditCategoryDialog = remember { mutableStateOf(false) }
     val categoryToEdit = remember { mutableStateOf<Category?>(null) }
-
-    // Handle snackbar visibility
-    LaunchedEffect(snackbarState) {
-        val currentState = snackbarState
-        when (currentState) {
-            is SnackbarState.Visible -> {
-                val result = snackbarHostState.showSnackbar(
-                    message = currentState.message,
-                    actionLabel = "Undo",
-                    withDismissAction = true,
-                )
-                when (result) {
-                    SnackbarResult.ActionPerformed -> {
-                        viewModel.undoDelete()
-                    }
-
-                    SnackbarResult.Dismissed -> {
-                        viewModel.hideSnackbar()
-                    }
-                }
-            }
-
-            is SnackbarState.Hidden -> {
-                // Do nothing
-            }
-        }
-    }
-
-    // Process pending deletions when leaving the screen
-    DisposableEffect(Unit) {
-        onDispose {
-            viewModel.processPendingDeletions()
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -131,10 +90,8 @@ fun CategoriesScreen(
                 )
             }
         },
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
-    ) { paddingValues ->
+
+        ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
