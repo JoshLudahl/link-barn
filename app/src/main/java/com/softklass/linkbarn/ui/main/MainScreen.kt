@@ -33,8 +33,14 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AddLink
+import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material.icons.rounded.EditNote
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -87,7 +93,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -180,7 +185,7 @@ fun EnterAlwaysTopAppBar(
                 actions = {
                     IconButton(onClick = { onNavigateToCategories() }) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_category),
+                            imageVector = Icons.Rounded.Category,
                             contentDescription = "Categories",
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
@@ -188,7 +193,7 @@ fun EnterAlwaysTopAppBar(
 
                     IconButton(onClick = { onNavigateToSettings() }) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_settings),
+                            imageVector = Icons.Rounded.Settings,
                             contentDescription = "Settings",
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
@@ -201,7 +206,7 @@ fun EnterAlwaysTopAppBar(
                         shape = RoundedCornerShape(16.dp),
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_add),
+                            imageVector = Icons.Rounded.Add,
                             contentDescription = "Add Link",
                             tint = MaterialTheme.colorScheme.onPrimary,
                         )
@@ -448,7 +453,7 @@ private fun LinksContent(
                             modifier = Modifier
                                 .size(200.dp)
                                 .padding(16.dp),
-                            painter = painterResource(id = R.drawable.ic_empty_state),
+                            imageVector = Icons.Rounded.AddLink,
                             contentDescription = "No links",
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
                         )
@@ -461,7 +466,7 @@ private fun LinksContent(
                             modifier = Modifier.padding(horizontal = 16.dp),
                         ) {
                             Icon(
-                                painterResource(R.drawable.ic_add),
+                                imageVector = Icons.Rounded.Add,
                                 contentDescription = "Add Link",
                                 tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(20.dp),
@@ -656,7 +661,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                     leadingIcon = if (isSelected) {
                                         {
                                             Icon(
-                                                painter = painterResource(R.drawable.ic_check),
+                                                imageVector = Icons.Rounded.Done,
                                                 contentDescription = "Done icon",
                                                 modifier = Modifier.size(FilterChipDefaults.IconSize),
                                             )
@@ -840,7 +845,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
 
                             ) {
                                 Icon(
-                                    painterResource(R.drawable.ic_share),
+                                    imageVector = Icons.Rounded.Share,
                                     contentDescription = "Share link",
                                     modifier = Modifier
                                         .size(24.dp),
@@ -855,7 +860,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                 ),
                             ) {
                                 Icon(
-                                    painterResource(R.drawable.ic_edit_note),
+                                    imageVector = Icons.Rounded.EditNote,
                                     contentDescription = "Edit link",
                                     modifier = Modifier
                                         .size(24.dp),
@@ -1143,7 +1148,7 @@ fun ModalBottomSheetAddUrl(
                                 leadingIcon = if (isSelected) {
                                     {
                                         Icon(
-                                            painter = painterResource(R.drawable.ic_check),
+                                            imageVector = Icons.Rounded.Done,
                                             contentDescription = "Done icon",
                                             modifier = Modifier.size(FilterChipDefaults.IconSize),
                                         )

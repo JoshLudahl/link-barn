@@ -14,6 +14,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -44,14 +48,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.ui.partials.SwipeToDismissContainer
 import kotlinx.coroutines.launch
@@ -80,7 +82,7 @@ fun CategoriesScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_arrow_back),
+                            imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                             contentDescription = "Back",
                         )
                     }
@@ -94,7 +96,7 @@ fun CategoriesScreen(
                 shape = RoundedCornerShape(16.dp),
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_add),
+                    imageVector = Icons.Rounded.Add,
                     contentDescription = "Add Category",
                     tint = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -362,7 +364,7 @@ fun EmptyState() {
             verticalArrangement = Arrangement.Center,
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_empty_state),
+                imageVector = Icons.Rounded.Category,
                 contentDescription = null,
                 modifier = Modifier.size(64.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
