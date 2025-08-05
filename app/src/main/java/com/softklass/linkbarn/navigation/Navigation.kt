@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.softklass.linkbarn.ui.categories.CategoriesScreen
+import com.softklass.linkbarn.ui.dashboard.DashboardScreen
 import com.softklass.linkbarn.ui.main.MainScreen
 import com.softklass.linkbarn.ui.main.MainViewModel
 import com.softklass.linkbarn.ui.settings.SettingsScreen
@@ -24,6 +25,9 @@ sealed interface Navigation {
 
     @Serializable
     data object Categories : Navigation
+
+    @Serializable
+    data object Dashboard : Navigation
 }
 
 @Composable
@@ -58,6 +62,13 @@ fun AppNavHost() {
                         )
                     }
 
+                    Navigation.Dashboard.toString() -> {
+                        slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(animationTween),
+                        )
+                    }
+
                     else -> {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Right,
@@ -74,6 +85,9 @@ fun AppNavHost() {
                 },
                 onNavigateToCategories = {
                     navController.navigate(Navigation.Categories)
+                },
+                onNavigateToDashboard = {
+                    navController.navigate(Navigation.Dashboard)
                 },
             )
         }
@@ -114,6 +128,27 @@ fun AppNavHost() {
             },
         ) {
             CategoriesScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+            )
+        }
+
+        composable<Navigation.Dashboard>(
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    animationSpec = tween(animationTween),
+                )
+            },
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    animationSpec = tween(animationTween),
+                )
+            },
+        ) {
+            DashboardScreen(
                 onNavigateBack = {
                     navController.popBackStack()
                 },

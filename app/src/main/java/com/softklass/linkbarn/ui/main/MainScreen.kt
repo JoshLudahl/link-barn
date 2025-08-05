@@ -37,6 +37,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.AddLink
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.Settings
@@ -116,6 +117,7 @@ fun MainScreen(
     viewModel: MainViewModel,
     onNavigateToSettings: () -> Unit = {},
     onNavigateToCategories: () -> Unit = {},
+    onNavigateToDashboard: () -> Unit = {},
 ) {
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 
@@ -138,6 +140,7 @@ fun MainScreen(
         viewModel = viewModel,
         onNavigateToSettings = onNavigateToSettings,
         onNavigateToCategories = onNavigateToCategories,
+        onNavigateToDashboard = onNavigateToDashboard,
         openBottomSheet = { openBottomSheet = true },
     )
 }
@@ -148,6 +151,7 @@ fun EnterAlwaysTopAppBar(
     viewModel: MainViewModel,
     onNavigateToSettings: () -> Unit = {},
     onNavigateToCategories: () -> Unit = {},
+    onNavigateToDashboard: () -> Unit = {},
     openBottomSheet: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
@@ -187,6 +191,14 @@ fun EnterAlwaysTopAppBar(
                         Icon(
                             imageVector = Icons.Rounded.Category,
                             contentDescription = "Categories",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
+
+                    IconButton(onClick = { onNavigateToDashboard() }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Dashboard,
+                            contentDescription = "Dashboard",
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
