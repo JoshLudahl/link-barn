@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.CategoryRepository
+import com.softklass.linkbarn.data.repository.ClickedLinkRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,6 +34,7 @@ enum class LinkFilter {
 class MainViewModel @Inject constructor(
     private val linkRepository: LinkDataRepository,
     private val categoryRepository: CategoryRepository,
+    private val clickedLinkRepository: ClickedLinkRepository,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
 
@@ -339,9 +341,11 @@ class MainViewModel @Inject constructor(
         viewModelScope.launch(dispatcher) {
             try {
                 linkRepository.markLinkAsVisited(link)
+                // Record the link click in the database
+                clickedLinkRepository.recordLinkClick(link.id)
             } catch (e: Exception) {
                 // Handle error if needed
-                Log.e("MainViewModel", "Error marking link as visited", e)
+                Log.e("MainViewModel", "Error marking link as visited or recording click", e)
             }
         }
     }

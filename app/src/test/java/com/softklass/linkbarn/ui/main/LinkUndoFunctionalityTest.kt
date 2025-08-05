@@ -3,6 +3,7 @@ package com.softklass.linkbarn.ui.main
 import com.softklass.linkbarn.MainCoroutineRule
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.CategoryRepository
+import com.softklass.linkbarn.data.repository.ClickedLinkRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -26,6 +27,7 @@ class LinkUndoFunctionalityTest {
 
     private val linkDataRepository: LinkDataRepository = mock()
     private val categoryRepository: CategoryRepository = mock()
+    private val clickedLinkRepository: ClickedLinkRepository = mock()
     private lateinit var viewModel: MainViewModel
 
     @Before
@@ -33,6 +35,7 @@ class LinkUndoFunctionalityTest {
         viewModel = MainViewModel(
             linkDataRepository,
             categoryRepository = categoryRepository,
+            clickedLinkRepository = clickedLinkRepository,
             dispatcher = testDispatcher,
         )
     }

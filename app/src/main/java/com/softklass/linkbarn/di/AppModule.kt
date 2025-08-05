@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Room
 import com.softklass.linkbarn.data.db.AppDatabase
 import com.softklass.linkbarn.data.db.dao.CategoryDao
+import com.softklass.linkbarn.data.db.dao.ClickedLinkDao
 import com.softklass.linkbarn.data.db.dao.LinkDao
 import com.softklass.linkbarn.data.preferences.SettingsPreferences
+import com.softklass.linkbarn.data.repository.ClickedLinkRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -26,7 +28,7 @@ object AppModule {
         context.applicationContext,
         AppDatabase::class.java,
         DATABASE_NAME,
-    ).addMigrations(AppDatabase.MIGRATION_1_2)
+    ).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
         .fallbackToDestructiveMigration(false) // During development, we'll allow destructive migrations
         .build()
 
@@ -37,6 +39,17 @@ object AppModule {
     @Provides
     @Singleton
     fun provideCategoryDao(database: AppDatabase): CategoryDao = database.categoryDao()
+
+    @Provides
+    @Singleton
+    fun provideClickedLinkDao(database: AppDatabase): ClickedLinkDao = database.clickedLinkDao()
+
+    @Provides
+    @Singleton
+    fun provideClickedLinkRepository(
+        clickedLinkDao: ClickedLinkDao,
+        linkDao: LinkDao,
+    ): ClickedLinkRepository = ClickedLinkRepository(clickedLinkDao, linkDao)
 
     @Provides
     fun provideCoroutineDispatcher(): CoroutineDispatcher = Dispatchers.IO
