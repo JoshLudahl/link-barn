@@ -1,6 +1,7 @@
 package com.softklass.linkbarn.ui.main
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
@@ -9,6 +10,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,7 +41,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ElevatedAssistChip
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -52,7 +53,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
@@ -78,6 +84,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -106,38 +113,6 @@ fun MainScreen(
     onNavigateToCategories: () -> Unit = {},
 ) {
     var openBottomSheet by rememberSaveable { mutableStateOf(false) }
-    rememberCoroutineScope()
-
-    // Snackbar state handling
-    val snackbarState by viewModel.snackbarState.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    // Handle snackbar visibility
-    LaunchedEffect(snackbarState) {
-        val currentState = snackbarState
-        when (currentState) {
-            is SnackbarState.Visible -> {
-                val result = snackbarHostState.showSnackbar(
-                    message = currentState.message,
-                    actionLabel = "Undo",
-                    withDismissAction = true,
-                )
-                when (result) {
-                    androidx.compose.material3.SnackbarResult.ActionPerformed -> {
-                        viewModel.undoDelete()
-                    }
-
-                    androidx.compose.material3.SnackbarResult.Dismissed -> {
-                        viewModel.hideSnackbar()
-                    }
-                }
-            }
-
-            is SnackbarState.Hidden -> {
-                // Do nothing
-            }
-        }
-    }
 
     // Handle shared URL from MainActivity
     LaunchedEffect(Unit) {
@@ -180,8 +155,10 @@ fun EnterAlwaysTopAppBar(
             scrollBehavior.state.heightOffset < -5
         }
     }
+    val snackbarHostState = remember { SnackbarHostState() }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
@@ -246,6 +223,26 @@ fun EnterAlwaysTopAppBar(
                         openBottomSheet = openBottomSheet,
                         onDelete = { link ->
                             viewModel.deleteLink(link)
+
+                            coroutineScope.launch {
+                                val result = snackbarHostState
+                                    .showSnackbar(
+                                        message = "Category ${link.name} deleted",
+                                        actionLabel = "Undo",
+                                        duration = SnackbarDuration.Short,
+                                        withDismissAction = true,
+                                    )
+                                when (result) {
+                                    SnackbarResult.ActionPerformed -> {
+                                        Log.d("MainScreen", "Undo delete tapped ${link.name}")
+                                        viewModel.undoDelete()
+                                    }
+
+                                    SnackbarResult.Dismissed -> {
+                                        Log.d("MainScreen", "Snackbar dismissed")
+                                    }
+                                }
+                            }
                         },
                         links = links,
                     )
@@ -310,11 +307,11 @@ private fun CollapsingHeader(viewModel: MainViewModel, isTopAppBarOffScreen: Boo
                         modifier = Modifier.weight(1f),
 
                         shapes =
-                        when (index) {
-                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                        },
+                            when (index) {
+                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                            },
                     ) {
                         if (currentFilter == label) {
                             Icon(
@@ -500,7 +497,6 @@ private fun LinksContent(
 @Composable
 fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
     val context = LocalContext.current
-    rememberCoroutineScope()
 
     // State to track if the item is in edit mode
     var isEditing by rememberSaveable { mutableStateOf(false) }
@@ -593,10 +589,10 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                         singleLine = true,
                         colors = TextFieldDefaults.colors(),
                         keyboardOptions =
-                        KeyboardOptions(
-                            imeAction = ImeAction.Done,
-                            capitalization = KeyboardCapitalization.Sentences,
-                        ),
+                            KeyboardOptions(
+                                imeAction = ImeAction.Done,
+                                capitalization = KeyboardCapitalization.Sentences,
+                            ),
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -792,13 +788,21 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                     categories.value = viewModel.getCategoriesForLink(link)
                                 }
 
-                                // Use a LazyRow to display category chips with horizontal scrolling
                                 LazyRow(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                                     modifier = Modifier.padding(start = 8.dp),
                                 ) {
                                     items(categories.value) { category ->
-                                        ElevatedAssistChip(
+                                        SuggestionChip(
+                                            modifier = Modifier.height(24.dp),
+                                            colors = SuggestionChipDefaults.suggestionChipColors(
+                                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                                labelColor = MaterialTheme.colorScheme.onSurface,
+                                            ),
+                                            border = BorderStroke(
+                                                width = 1.dp,
+                                                color = Color.Transparent,
+                                            ),
                                             onClick = { },
                                             label = {
                                                 Text(
@@ -806,7 +810,6 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                                     fontSize = 10.sp,
                                                 )
                                             },
-                                            modifier = Modifier.height(24.dp),
                                         )
                                     }
                                 }
@@ -835,7 +838,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                     containerColor = MaterialTheme.colorScheme.primary,
                                 ),
 
-                            ) {
+                                ) {
                                 Icon(
                                     painterResource(R.drawable.ic_share),
                                     contentDescription = "Share link",

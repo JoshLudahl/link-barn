@@ -3,20 +3,15 @@ package com.softklass.linkbarn.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.softklass.linkbarn.BuildConfig
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.CategoryRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.net.URI
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -24,6 +19,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.net.URI
+import javax.inject.Inject
 
 enum class LinkFilter {
     ALL,
@@ -69,8 +66,7 @@ class MainViewModel @Inject constructor(
     private val _sharedUrl = MutableStateFlow<String?>(null)
     val sharedUrl: StateFlow<String?> = _sharedUrl.asStateFlow()
 
-    private var deletedLink: Link? = null
-    private var deleteJob: Job? = null
+    private var pendingDeletingLink: Link? = null
 
     // Track all links separately to determine if we should show segmented buttons
     val allLinks: StateFlow<List<Link>> = linkRepository.getAllLinks().stateIn(
@@ -115,12 +111,6 @@ class MainViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
     )
-
-    init {
-        if (BuildConfig.DEBUG) {
-            // populatetestdata()
-        }
-    }
 
     fun addLink(name: String, url: String, categoryNames: List<String> = emptyList()) {
         viewModelScope.launch(dispatcher) {
@@ -313,45 +303,24 @@ class MainViewModel @Inject constructor(
     }
 
     fun deleteLink(link: Link) {
-        // Cancel any existing delete job
-        deleteJob?.cancel()
-
-        // Store the deleted link for potential undo
-        deletedLink = link
-
-        // Add link to pending deletions to hide it from UI
-        _pendingDeletions.value = _pendingDeletions.value + link.id
-
-        // Show snackbar with undo option
-        _snackbarState.value = SnackbarState.Visible(
-            message = "Link deleted",
-            linkName = link.name ?: "Untitled",
-        )
-
-        // Schedule permanent deletion after 5 seconds
-        deleteJob = viewModelScope.launch(dispatcher) {
-            try {
-                delay(5000) // 5 seconds delay
-                linkRepository.deleteLink(link.id)
-                deletedLink = null
-                _pendingDeletions.value = _pendingDeletions.value - link.id
-                _snackbarState.value = SnackbarState.Hidden
-            } catch (e: Exception) {
-                // Handle error if needed - could add error state for delete operations
-                Log.e("MainViewModel", "Error deleting link", e)
-                _pendingDeletions.value = _pendingDeletions.value - link.id
-                _snackbarState.value = SnackbarState.Hidden
-            }
+        pendingDeletingLink = link
+        viewModelScope.launch(dispatcher) {
+            linkRepository.deleteLink(link.id)
         }
     }
 
     fun undoDelete() {
-        deleteJob?.cancel()
-        deletedLink?.let { link ->
-            _pendingDeletions.value = _pendingDeletions.value - link.id
+        viewModelScope.launch {
+            pendingDeletingLink?.let { link ->
+                addLink(
+                    name = link.name?.trim() ?: "Unnamed",
+                    url = link.uri.toString(),
+                    categoryNames = link.categoryIds.map { categoryId ->
+                        categoryRepository.getCategoryById(categoryId)?.name ?: "No Category"
+                    },
+                )
+            }
         }
-        deletedLink = null
-        _snackbarState.value = SnackbarState.Hidden
     }
 
     fun hideSnackbar() {
@@ -385,7 +354,7 @@ class MainViewModel @Inject constructor(
         _sharedUrl.value = null
     }
 
-    fun populatetestdata() {
+    fun populateTestData() {
         viewModelScope.launch(dispatcher) {
             addCategory("A")
             addCategory("B")
