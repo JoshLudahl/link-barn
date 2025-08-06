@@ -57,8 +57,6 @@ fun DashboardScreen(
 
     // Collect clicked links from ViewModel
     val clickedLinks by viewModel.clickedLinks.collectAsState()
-    val totalClicksCount by viewModel.totalClicksCount.collectAsState()
-    val uniqueLinksClickedCount by viewModel.uniqueLinksClickedCount.collectAsState()
 
     Scaffold(
         topBar = {
@@ -68,13 +66,9 @@ fun DashboardScreen(
                     IconButton(
                         onClick = {
                             if (isBackButtonEnabled) {
-                                // Disable the button to prevent double-clicking
                                 isBackButtonEnabled = false
-
-                                // Perform the navigation
                                 onNavigateBack()
 
-                                // Re-enable the button after a delay (if needed)
                                 scope.launch {
                                     delay(500) // 500ms delay
                                     isBackButtonEnabled = true
@@ -98,28 +92,7 @@ fun DashboardScreen(
                 .padding(padding),
         ) {
             if (clickedLinks.isEmpty()) {
-                // Empty state
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                    ) {
-                        Text(
-                            text = "No links clicked yet",
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center,
-                        )
-                        Text(
-                            text = "Click on links from the main screen to see them here",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(top = 8.dp),
-                        )
-                    }
-                }
+                EmptyDashboard()
             } else {
                 // Grid of clicked links
                 LazyVerticalGrid(
@@ -177,6 +150,31 @@ fun ClickedLinkCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+    }
+}
+
+@Composable
+fun EmptyDashboard() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                text = "No links clicked yet",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+            )
+            Text(
+                text = "Click on links from the main screen to see them here",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(top = 8.dp),
             )
         }
     }
