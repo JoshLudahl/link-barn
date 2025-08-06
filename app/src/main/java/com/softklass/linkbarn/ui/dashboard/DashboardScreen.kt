@@ -116,6 +116,7 @@ fun DashboardScreen(
                             ClickedLinkCard(
                                 link = item,
                                 onClick = {
+                                    viewModel.trackClickedLinks(item)
                                     val intent = Intent(Intent.ACTION_VIEW, item.uri.toString().lowercase().toUri())
                                     context.startActivity(intent)
                                 },

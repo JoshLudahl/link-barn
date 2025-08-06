@@ -9,10 +9,11 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    clickedLinkRepository: ClickedLinkRepository,
+    val clickedLinkRepository: ClickedLinkRepository,
 ) : ViewModel() {
 
     val clickedLinks: StateFlow<List<Link>> =
@@ -22,4 +23,10 @@ class DashboardViewModel @Inject constructor(
                 started = SharingStarted.WhileSubscribed(5000),
                 initialValue = emptyList(),
             )
+
+    fun trackClickedLinks(link: Link) {
+        viewModelScope.launch {
+            clickedLinkRepository.recordLinkClick(link.id)
+        }
+    }
 }
