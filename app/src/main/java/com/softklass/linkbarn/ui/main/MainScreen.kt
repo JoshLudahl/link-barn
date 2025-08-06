@@ -215,8 +215,8 @@ fun EnterAlwaysTopAppBar(
                 floatingActionButton = {
                     ExtendedFloatingActionButton(
                         onClick = openBottomSheet,
-                        icon = { Icon(Icons.Rounded.Add, "Add a website", tint = MaterialTheme.colorScheme.onPrimary) },
-                        text = { Text(text = "Add a website") },
+                        icon = { Icon(Icons.Rounded.Add, "Add a Link", tint = MaterialTheme.colorScheme.onPrimary) },
+                        text = { Text(text = "Add a Link") },
                         containerColor = MaterialTheme.colorScheme.primary,
                         shape = RoundedCornerShape(16.dp),
                     )

@@ -24,7 +24,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -90,17 +90,25 @@ fun CategoriesScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+//            FloatingActionButton(
+//                onClick = { showAddCategoryDialog.value = true },
+//                containerColor = MaterialTheme.colorScheme.primary,
+//                shape = RoundedCornerShape(16.dp),
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Rounded.Add,
+//                    contentDescription = "Add Category",
+//                    tint = MaterialTheme.colorScheme.onPrimary,
+//                )
+//            }
+
+            ExtendedFloatingActionButton(
                 onClick = { showAddCategoryDialog.value = true },
+                icon = { Icon(Icons.Rounded.Add, "Add a category", tint = MaterialTheme.colorScheme.onPrimary) },
+                text = { Text(text = "Add a category") },
                 containerColor = MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(16.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Add,
-                    contentDescription = "Add Category",
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
+            )
         },
 
     ) { paddingValues ->
