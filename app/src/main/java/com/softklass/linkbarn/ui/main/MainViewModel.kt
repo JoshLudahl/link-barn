@@ -61,9 +61,6 @@ class MainViewModel @Inject constructor(
     private val _deletingLinkIds = MutableStateFlow<Set<String>>(emptySet())
     val deletingLinkIds: StateFlow<Set<String>> = _deletingLinkIds
 
-    private val _snackbarState = MutableStateFlow<SnackbarState>(SnackbarState.Hidden)
-    val snackbarState: StateFlow<SnackbarState> = _snackbarState.asStateFlow()
-
     private val _pendingDeletions = MutableStateFlow<Set<String>>(emptySet())
     val pendingDeletions: StateFlow<Set<String>> = _pendingDeletions.asStateFlow()
 
@@ -87,7 +84,7 @@ class MainViewModel @Inject constructor(
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val links: StateFlow<List<Link>> = kotlinx.coroutines.flow.combine(
+    val links: StateFlow<List<Link>> = combine(
         _currentFilter,
         _selectedCategoryIds,
         _pendingDeletions,
@@ -331,10 +328,6 @@ class MainViewModel @Inject constructor(
                 )
             }
         }
-    }
-
-    fun hideSnackbar() {
-        _snackbarState.value = SnackbarState.Hidden
     }
 
     fun setFilter(filter: LinkFilter) {
