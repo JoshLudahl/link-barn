@@ -19,7 +19,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -99,12 +101,12 @@ class MainViewModel @Inject constructor(
                     linkRepository.getLinksByCategories(selectedCategoryIds)
                 } else {
                     // Return empty list when no categories are selected
-                    kotlinx.coroutines.flow.flowOf(emptyList())
+                    flowOf(emptyList())
                 }
             }
         }
     }.flatMapLatest { flow ->
-        kotlinx.coroutines.flow.combine(flow, _pendingDeletions) { links, pendingDeletions ->
+        combine(flow, _pendingDeletions) { links, pendingDeletions ->
             // Filter out links that are pending deletion
             links.filter { link -> link.id !in pendingDeletions }
         }
@@ -113,6 +115,12 @@ class MainViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
     )
+
+//    init {
+//        if (BuildConfig.DEBUG) {
+//            populateTestData(20)
+//        }
+//    }
 
     fun addLink(name: String, url: String, categoryNames: List<String> = emptyList()) {
         viewModelScope.launch(dispatcher) {
@@ -358,14 +366,13 @@ class MainViewModel @Inject constructor(
         _sharedUrl.value = null
     }
 
-    fun populateTestData() {
+    fun populateTestData(number: Int) {
         viewModelScope.launch(dispatcher) {
-            addCategory("A")
-            addCategory("B")
-            addCategory("C")
-            addLink("A", "https://www.a.com")
-            addLink("B", "https://www.b.com")
-            addLink("C", "https://www.c.com")
+            for (i in 1..number) {
+                val category = Category(name = "Category $i")
+                categoryRepository.insertCategory(category)
+                addLink("Link $i", "https://www.link$i.com", listOf("Category $i"))
+            }
         }
     }
 }

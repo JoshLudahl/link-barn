@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.Card
@@ -55,6 +54,17 @@ fun DashboardScreen(
     var isBackButtonEnabled by remember { mutableStateOf(true) }
     val clickedLinks by viewModel.clickedLinks.collectAsState()
 
+    // Define grid parameters
+    val numberOfColumns = 2
+    val totalGridCells = 18
+
+    // Prepare items for the grid, including placeholders
+    val gridItems = remember(clickedLinks) {
+        val actualItems = clickedLinks.take(totalGridCells) // Take at most 18 items
+        val placeholderCount = totalGridCells - actualItems.size
+        actualItems + List(placeholderCount) { PlaceholderItem } // Add placeholders
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -92,22 +102,63 @@ fun DashboardScreen(
                 EmptyDashboard()
             } else {
                 LazyVerticalGrid(
-                    columns = GridCells.Adaptive(minSize = 160.dp),
+                    columns = GridCells.Fixed(numberOfColumns), // Fixed number of columns
                     contentPadding = PaddingValues(16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
+                    modifier = Modifier.fillMaxSize(), // Allow grid to take up available space
                 ) {
-                    items(clickedLinks) { link ->
-                        ClickedLinkCard(
-                            link = link,
-                            onClick = {
-                                val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
-                                context.startActivity(intent)
-                            },
-                        )
+                    items(gridItems.size) { index ->
+                        // Iterate up to totalGridCells
+                        val item = gridItems[index]
+                        if (item is Link) {
+                            ClickedLinkCard(
+                                link = item,
+                                onClick = {
+                                    val intent = Intent(Intent.ACTION_VIEW, item.uri.toString().lowercase().toUri())
+                                    context.startActivity(intent)
+                                },
+                            )
+                        } else {
+                            PlaceholderCard() // Your Composable for placeholder items
+                        }
                     }
                 }
             }
+        }
+    }
+}
+
+// Define a simple data object for placeholders (or use null or a specific class)
+object PlaceholderItem
+
+@Composable
+fun PlaceholderCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxSize(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.1f), // Dim color for placeholder
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp), // Optional: no elevation
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize() // Make placeholder take the same space as a real card
+                .padding(12.dp), // Match padding of ClickedLinkCard
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = "\n", // Reserves space for two lines, similar to title and host
+                style = MaterialTheme.typography.titleSmall, // Use similar typography
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0f), // Invisible
+            )
+            Text(
+                text = " ", // Reserves space for one line
+                style = MaterialTheme.typography.bodySmall, // Use similar typography
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0f), // Invisible
+                modifier = Modifier.padding(top = 4.dp),
+            )
         }
     }
 }
@@ -145,7 +196,7 @@ fun ClickedLinkCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 8.dp),
             )
         }
     }

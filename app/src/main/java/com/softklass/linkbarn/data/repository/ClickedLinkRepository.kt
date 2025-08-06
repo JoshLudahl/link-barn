@@ -4,9 +4,9 @@ import com.softklass.linkbarn.data.db.dao.ClickedLinkDao
 import com.softklass.linkbarn.data.db.dao.LinkDao
 import com.softklass.linkbarn.data.model.ClickedLink
 import com.softklass.linkbarn.data.model.Link
+import javax.inject.Inject
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import javax.inject.Inject
 
 open class ClickedLinkRepository @Inject constructor(
     private val clickedLinkDao: ClickedLinkDao,
