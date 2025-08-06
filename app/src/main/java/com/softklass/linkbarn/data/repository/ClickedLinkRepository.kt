@@ -12,20 +12,6 @@ open class ClickedLinkRepository @Inject constructor(
     private val clickedLinkDao: ClickedLinkDao,
     private val linkDao: LinkDao,
 ) {
-    open fun getAllClickedLinks(): Flow<List<ClickedLink>> = clickedLinkDao.getAllClickedLinks()
-
-    open fun getClickedLinksWithDetails(): Flow<List<Pair<ClickedLink, Link?>>> = combine(
-        clickedLinkDao.getAllClickedLinks(),
-        linkDao.getAllLinks(),
-    ) { clickedLinks, allLinks ->
-        clickedLinks.map { clickedLink ->
-            val link = allLinks.find { it.id == clickedLink.linkId }
-            clickedLink to link
-        }
-    }
-
-    open fun getClickedLinksByLinkId(linkId: String): Flow<List<ClickedLink>> = clickedLinkDao.getClickedLinksByLinkId(linkId)
-
     open suspend fun insertClickedLink(clickedLink: ClickedLink) = clickedLinkDao.insertClickedLink(clickedLink)
 
     open suspend fun recordLinkClick(linkId: String) {
@@ -33,9 +19,12 @@ open class ClickedLinkRepository @Inject constructor(
         insertClickedLink(clickedLink)
     }
 
-    open suspend fun deleteClickedLinksByLinkId(linkId: String) = clickedLinkDao.deleteClickedLinksByLinkId(linkId)
-
-    open suspend fun deleteAllClickedLinks() = clickedLinkDao.deleteAllClickedLinks()
-
-    open suspend fun getClickCountForLink(linkId: String): Int = clickedLinkDao.getClickCountForLink(linkId)
+    open fun getLinksOrderedByClickCount(): Flow<List<Link>> = combine(
+        clickedLinkDao.getLinksOrderedByClickCount(),
+        linkDao.getAllLinks(),
+    ) { linkClickCounts, allLinks ->
+        linkClickCounts.mapNotNull { linkClickCount ->
+            allLinks.find { it.id == linkClickCount.linkId }
+        }
+    }
 }

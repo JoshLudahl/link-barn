@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.softklass.linkbarn.data.model.ClickedLink
+import com.softklass.linkbarn.data.model.LinkClickCount
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -26,4 +27,14 @@ interface ClickedLinkDao {
 
     @Query("SELECT COUNT(*) FROM clicked_links WHERE link_id = :linkId")
     suspend fun getClickCountForLink(linkId: String): Int
+
+    @Query(
+        """
+        SELECT link_id, COUNT(*) as click_count 
+        FROM clicked_links 
+        GROUP BY link_id 
+        ORDER BY click_count DESC, MAX(clicked_at) DESC
+    """,
+    )
+    fun getLinksOrderedByClickCount(): Flow<List<LinkClickCount>>
 }
