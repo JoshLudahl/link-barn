@@ -114,7 +114,7 @@ fun CategoriesScreen(
             }
         },
 
-        ) { paddingValues ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
