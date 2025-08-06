@@ -51,11 +51,7 @@ fun DashboardScreen(
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-
-    // State to prevent double-clicking the back button
     var isBackButtonEnabled by remember { mutableStateOf(true) }
-
-    // Collect clicked links from ViewModel
     val clickedLinks by viewModel.clickedLinks.collectAsState()
 
     Scaffold(
@@ -94,7 +90,6 @@ fun DashboardScreen(
             if (clickedLinks.isEmpty()) {
                 EmptyDashboard()
             } else {
-                // Grid of clicked links
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(minSize = 160.dp),
                     contentPadding = PaddingValues(16.dp),
@@ -105,7 +100,6 @@ fun DashboardScreen(
                         ClickedLinkCard(
                             link = link,
                             onClick = {
-                                // Open the link in browser
                                 val intent = Intent(Intent.ACTION_VIEW, link.uri.toString().lowercase().toUri())
                                 context.startActivity(intent)
                             },
