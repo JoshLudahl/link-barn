@@ -69,6 +69,7 @@ fun DashboardScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Dashboard") },
+                subtitle = { Text("Your most visited links.") },
                 navigationIcon = {
                     IconButton(
                         onClick = {
