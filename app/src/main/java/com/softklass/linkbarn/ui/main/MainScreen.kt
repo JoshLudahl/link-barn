@@ -321,11 +321,11 @@ private fun CollapsingHeader(viewModel: MainViewModel, isTopAppBarOffScreen: Boo
                         modifier = Modifier.weight(1f),
 
                         shapes =
-                        when (index) {
-                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                        },
+                            when (index) {
+                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                            },
                     ) {
                         if (currentFilter == label) {
                             Icon(
@@ -603,10 +603,10 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                         singleLine = true,
                         colors = TextFieldDefaults.colors(),
                         keyboardOptions =
-                        KeyboardOptions(
-                            imeAction = ImeAction.Done,
-                            capitalization = KeyboardCapitalization.Sentences,
-                        ),
+                            KeyboardOptions(
+                                imeAction = ImeAction.Done,
+                                capitalization = KeyboardCapitalization.Sentences,
+                            ),
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -852,7 +852,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                     containerColor = MaterialTheme.colorScheme.primary,
                                 ),
 
-                            ) {
+                                ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Share,
                                     contentDescription = "Share link",
