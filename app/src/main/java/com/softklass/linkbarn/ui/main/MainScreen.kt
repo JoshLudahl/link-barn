@@ -1,5 +1,6 @@
 package com.softklass.linkbarn.ui.main
 
+import android.content.Context
 import android.content.Intent
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
@@ -110,6 +111,7 @@ import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.ui.partials.DismissBackground
+import com.softklass.linkbarn.ui.partials.TopAppBarIcon
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -159,6 +161,7 @@ fun EnterAlwaysTopAppBar(
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val links by viewModel.links.collectAsState()
+    val context = LocalContext.current
 
     val isTopAppBarOffScreen by remember {
         derivedStateOf {
@@ -182,6 +185,9 @@ fun EnterAlwaysTopAppBar(
                 },
                 subtitle = { Text("Your saved links.", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 scrollBehavior = scrollBehavior,
+                actions = {
+                    TopAppBarIcon { shareApp(context) }
+                },
             )
         },
         bottomBar = {
@@ -1216,4 +1222,16 @@ fun ModalBottomSheetAddUrl(
             }
         }
     }
+}
+
+fun shareApp(context: Context) {
+    val packageName = context.packageName
+    val shareText = "Check out LinkBarn: https://play.google.com/store/apps/details?id=$packageName"
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, "LinkBarn")
+        putExtra(Intent.EXTRA_TEXT, shareText)
+    }
+    val chooser = Intent.createChooser(sendIntent, "Share LinkBarn")
+    context.startActivity(chooser, null)
 }
