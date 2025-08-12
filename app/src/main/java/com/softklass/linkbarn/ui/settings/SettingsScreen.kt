@@ -40,7 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.material.color.DynamicColors
+import com.softklass.linkbarn.ui.partials.TopAppBarIcon
 import com.softklass.linkbarn.ui.theme.ThemeMode
+import com.softklass.linkbarn.utils.shareAppIntent
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
@@ -55,6 +57,7 @@ fun SettingsScreen(
 
     // State to prevent double-clicking the back button
     var isBackButtonEnabled by remember { mutableStateOf(true) }
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -84,6 +87,9 @@ fun SettingsScreen(
                             contentDescription = "Back",
                         )
                     }
+                },
+                actions = {
+                    TopAppBarIcon { shareAppIntent(context) }
                 },
             )
         },
