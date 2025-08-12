@@ -49,6 +49,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -57,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.ui.partials.SwipeToDismissContainer
+import com.softklass.linkbarn.ui.partials.TopAppBarIcon
+import com.softklass.linkbarn.utils.shareAppIntent
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,6 +75,7 @@ fun CategoriesScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         snackbarHost = {
@@ -88,8 +92,12 @@ fun CategoriesScreen(
                         )
                     }
                 },
+                actions = {
+                    TopAppBarIcon { shareAppIntent(context) }
+                },
             )
         },
+
         floatingActionButton = {
             if (categories.isNotEmpty()) {
                 FloatingActionButton(

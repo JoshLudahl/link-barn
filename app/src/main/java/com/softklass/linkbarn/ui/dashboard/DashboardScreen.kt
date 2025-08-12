@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.data.model.Link
+import com.softklass.linkbarn.ui.partials.TopAppBarIcon
+import com.softklass.linkbarn.utils.shareAppIntent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -90,6 +92,9 @@ fun DashboardScreen(
                             contentDescription = "Back",
                         )
                     }
+                },
+                actions = {
+                    TopAppBarIcon { shareAppIntent(context) }
                 },
             )
         },
