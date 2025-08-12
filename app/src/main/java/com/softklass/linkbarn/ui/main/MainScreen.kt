@@ -217,6 +217,14 @@ fun EnterAlwaysTopAppBar(
                             tint = MaterialTheme.colorScheme.onSurface,
                         )
                     }
+
+                    IconButton(onClick = { shareAppIntent(context) }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = "Share this application.",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                        )
+                    }
                 },
                 floatingActionButton = {
                     ExtendedFloatingActionButton(
