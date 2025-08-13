@@ -34,8 +34,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -224,6 +232,32 @@ fun SettingsScreen(
                 }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "About",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "Barn Owl",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "The Link Barn is inspired after the Barn Owl. It is a symbol of wisdom and knowledge.",
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            AttributionAnnotatedText()
+
             // Push the version and review button to the bottom
             Spacer(modifier = Modifier.weight(1f))
 
@@ -264,5 +298,47 @@ fun SettingsScreen(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+}
+
+@Composable
+fun AttributionAnnotatedText() {
+    val annotatedLinkString: AnnotatedString = remember {
+        buildAnnotatedString {
+            val style = SpanStyle()
+
+            val styleCenter = SpanStyle(
+                color = Color(0xff64B5F6),
+                textDecoration = TextDecoration.Underline,
+            )
+
+            withStyle(
+                style = style,
+            ) {
+                append("To learn more, ")
+            }
+
+            withLink(LinkAnnotation.Url(url = "https://myodfw.com/wildlife-viewing/species/barn-owl")) {
+                withStyle(
+                    style = styleCenter,
+                ) {
+                    append("click here")
+                }
+            }
+
+            withStyle(
+                style = style,
+            ) {
+                append(".")
+            }
+        }
+    }
+
+    Column {
+        Text(
+            text = annotatedLinkString,
+            fontSize = 14.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
