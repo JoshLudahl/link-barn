@@ -1,84 +1,123 @@
 [versions]
-kotlinxCoroutinesCore = "1.10.2"
-ktlint = "13.0.0"
 activityCompose = "1.10.1"
-desugar_jdk_libs = "2.1.5"
-materialIconsCore = "1.7.8"
-materialIconsExtended = "1.7.8"
-roomVersion = "2.7.2"
-androidxTestCore = "1.7.0"
-gsonVersion = "2.13.1"
-kspVersion = "2.2.0-2.0.2"
-hiltVersion = "2.57"
-hiltNavigationCompose = "1.2.0"
-material = "1.5.0-alpha01"
-googleMaterial = "1.12.0"
-mockitoCore = "5.18.0"
-mockitoKotlin = "6.0.0"
-mockitoAndroid = "5.18.0"
-coroutinesTest = "1.10.2"
 androidApplication = "8.12.0"
 androidKotlin = "2.2.0"
-composeBom = "2025.07.00"
-coreKtx = "1.16.0"
+androidxTestCore = "1.7.0"
+appUpdateKtx = "2.1.0"
+composeBom = "2025.08.00"
+coreKtx = "1.17.0"
+coroutinesPlayServices = "1.10.2"
+coroutinesTest = "1.10.2"
 datastorePreferences = "1.1.7"
+desugar_jdk_libs = "2.1.5"
 espressoCore = "3.7.0"
+googleMaterial = "1.12.0"
+gsonVersion = "2.13.1"
+hiltNavigationCompose = "1.2.0"
+hiltVersion = "2.57"
 junit = "4.13.2"
 junitVersion = "1.3.0"
+kspVersion = "2.2.0-2.0.2"
+kotlinxCoroutinesCore = "1.10.2"
+ktlint = "13.0.0"
 lifecycleRuntimeKtx = "2.9.2"
+material = "1.5.0-alpha02"
+materialIconsCore = "1.7.8"
+materialIconsExtended = "1.7.8"
+mockitoAndroid = "5.18.0"
+mockitoCore = "5.18.0"
+mockitoKotlin = "6.0.0"
 navigationCompose = "2.9.3"
-uiTextGoogleFonts = "1.8.3"
-appUpdateKtx = "2.1.0"
 playReviewKtx = "2.0.2"
-coroutinesPlayServices = "1.10.2"
+roomVersion = "2.7.2"
+uiTextGoogleFonts = "1.9.0"
 
 [libraries]
+# AndroidX - Activity
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+
+# AndroidX - Core
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+
+# AndroidX - Compose
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
 androidx-compose-ui-graphics = { module = "androidx.compose.ui:ui-graphics"}
-androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
-androidx-compose-material = { module = "androidx.compose.material:material"}
-androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
+
+# AndroidX - DataStore
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 androidx-datastore-preferences-core = { module = "androidx.datastore:datastore-preferences-core", version.ref = "datastorePreferences" }
+
+# AndroidX - Lifecycle
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+
+# AndroidX - Navigation
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+
+# AndroidX - Room
+androidx-room-common = { module = "androidx.room:room-common", version.ref = "roomVersion" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
+androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomVersion" }
+
+# AndroidX - Test
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
 androidx-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }
-androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
-androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
-androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTestCore" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+
+# Desugaring
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
-junit = { module = "junit:junit", version.ref = "junit" }
+
+# Google - Hilt
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltVersion" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltVersion" }
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
-mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
-mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
-mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
-kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
-androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomVersion" }
-androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomVersion" }
-androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomVersion" }
-androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomVersion" }
-androidx-room-common = { module = "androidx.room:room-common", version.ref = "roomVersion" }
-gson = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
+
+# Material
+androidx-compose-material = { module = "androidx.compose.material:material"}
+androidx-compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material" }
+androidx-material-icons-core = { module = "androidx.compose.material:material-icons-core", version.ref = "materialIconsCore" }
+androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
 androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
-app-update-ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "appUpdateKtx" }
-play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "playReviewKtx" }
-kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
 google-material = { module = "com.google.android.material:material", version.ref = "googleMaterial" }
 
+# Google - Play Services
+app-update-ktx = { group = "com.google.android.play", name = "app-update-ktx", version.ref = "appUpdateKtx" }
+play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "playReviewKtx" }
+
+# Kotlinx - Coroutines
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinxCoroutinesCore" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
+
+# Square
+gson = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
+
+# Testing - JUnit
+junit = { module = "junit:junit", version.ref = "junit" }
+
+# Testing - Mockito
+mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+
+
 [plugins]
-ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltVersion" }
+# Android
 android-application = { id = "com.android.application", version.ref = "androidApplication" }
 android-kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "androidKotlin" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "androidKotlin" }
-kotlin-serializable = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "androidKotlin" }
-ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" }
+
+# Kotlin
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "androidKotlin" } # Shares version with androidKotlin
+ksp = { id = "com.google.devtools.ksp", version.ref = "kspVersion" } # Kotlin Symbol Processing
+kotlin-serializable = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "androidKotlin" } # Shares version with androidKotlin
+
+# Hilt
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hiltVersion" }
+
+# Linting
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
