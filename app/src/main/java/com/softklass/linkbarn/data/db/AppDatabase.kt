@@ -18,7 +18,7 @@ import com.softklass.linkbarn.data.model.Link
         Category::class,
         ClickedLink::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
 )
 @TypeConverters(Converters::class)
@@ -59,6 +59,14 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                     """,
                 )
+            }
+        }
+
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // Add created column to links table and backfill with current time in millis
+                db.execSQL("ALTER TABLE links ADD COLUMN created INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("UPDATE links SET created = CAST(strftime('%s','now') AS INTEGER) * 1000 WHERE created = 0")
             }
         }
     }

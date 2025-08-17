@@ -22,6 +22,9 @@ data class Link(
     @ColumnInfo(name = "updated")
     val updated: Instant = Instant.now(),
 
+    @ColumnInfo(name = "created")
+    val created: Instant = Instant.now(),
+
     @ColumnInfo(name = "uri")
     val uri: URI,
 

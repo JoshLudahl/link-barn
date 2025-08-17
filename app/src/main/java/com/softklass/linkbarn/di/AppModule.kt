@@ -28,7 +28,7 @@ object AppModule {
         context.applicationContext,
         AppDatabase::class.java,
         DATABASE_NAME,
-    ).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
+    ).addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3, AppDatabase.MIGRATION_3_4)
         .fallbackToDestructiveMigration(false) // During development, we'll allow destructive migrations
         .build()
 

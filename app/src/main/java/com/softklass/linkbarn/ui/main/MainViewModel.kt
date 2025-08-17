@@ -3,7 +3,6 @@ package com.softklass.linkbarn.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.softklass.linkbarn.BuildConfig
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.CategoryRepository
@@ -11,9 +10,13 @@ import com.softklass.linkbarn.data.repository.ClickedLinkRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.URI
+import java.time.Instant
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -23,9 +26,6 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.net.URI
-import java.time.Instant
-import javax.inject.Inject
 
 enum class LinkFilter {
     ALL,
@@ -60,9 +60,6 @@ class MainViewModel @Inject constructor(
     private val _selectedCategories = MutableStateFlow<List<Category>>(emptyList())
     val selectedCategories: StateFlow<List<Category>> = _selectedCategories
 
-    private val _deletingLinkIds = MutableStateFlow<Set<String>>(emptySet())
-    val deletingLinkIds: StateFlow<Set<String>> = _deletingLinkIds
-
     private val _sharedUrl = MutableStateFlow<String?>(null)
     val sharedUrl: StateFlow<String?> = _sharedUrl.asStateFlow()
 
@@ -87,7 +84,7 @@ class MainViewModel @Inject constructor(
         Pair(filter, categories) // Combine triggers into a pair
     }.flatMapLatest { (filter, selectedCategoryIds) ->
         // Determine the base database flow based on filter and categories
-        val baseDbFlow: kotlinx.coroutines.flow.Flow<List<Link>> = when (filter) {
+        val baseDbFlow: Flow<List<Link>> = when (filter) {
             LinkFilter.ALL -> linkRepository.getAllLinks()
             LinkFilter.VISITED -> linkRepository.getVisitedLinks()
             LinkFilter.UNVISITED -> linkRepository.getUnvisitedLinks()
@@ -106,11 +103,11 @@ class MainViewModel @Inject constructor(
         initialValue = emptyList(),
     )
 
-    init {
-        if (BuildConfig.DEBUG) {
-            populateTestData(20)
-        }
-    }
+//    init {
+//        if (BuildConfig.DEBUG) {
+//            populateTestData(20)
+//        }
+//    }
 
     fun addLink(name: String, url: String, categoryNames: List<String> = emptyList()) {
         viewModelScope.launch(dispatcher) {
@@ -326,6 +323,7 @@ class MainViewModel @Inject constructor(
                     linkRepository.insertLink(
                         link.copy(
                             updated = Instant.now(),
+                            created = link.created,
                         ),
                     )
 

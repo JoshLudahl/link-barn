@@ -52,6 +52,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -272,7 +273,7 @@ fun EnterAlwaysTopAppBar(
                                 }
                             }
                         },
-                        links = links,
+                        links = links.sortedBy { it.created },
                     )
                 }
 
@@ -393,7 +394,7 @@ private fun CollapsingHeader(viewModel: MainViewModel, isTopAppBarOffScreen: Boo
             ) {
                 // "All" chip
                 item {
-                    androidx.compose.material3.FilterChip(
+                    FilterChip(
                         selected = selectedCategoryIds.isEmpty(),
                         onClick = { viewModel.selectCategoryFilter(null) },
                         label = { Text("All") },
@@ -403,7 +404,7 @@ private fun CollapsingHeader(viewModel: MainViewModel, isTopAppBarOffScreen: Boo
 
                 // Category chips
                 items(allCategories) { category ->
-                    androidx.compose.material3.FilterChip(
+                    FilterChip(
                         selected = selectedCategoryIds.contains(category.id),
                         leadingIcon = if (selectedCategoryIds.contains(category.id)) {
                             {
@@ -436,7 +437,7 @@ private fun LinksContent(
     onDelete: (Link) -> Unit,
     links: List<Link> = emptyList(),
 ) {
-    val deletingLinkIds by viewModel.deletingLinkIds.collectAsState()
+    // val deletingLinkIds by viewModel.deletingLinkIds.collectAsState()
     val currentFilter by viewModel.currentFilter.collectAsState()
 
     LazyColumn(
@@ -509,7 +510,7 @@ private fun LinksContent(
                 key = { link -> link.id + link.updated },
             ) { link ->
                 AnimatedVisibility(
-                    visible = !deletingLinkIds.contains(link.id),
+                    visible = links.contains(link),
                     exit = slideOutHorizontally(
                         targetOffsetX = { -it },
                         animationSpec = tween(300),
@@ -679,7 +680,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                         ) {
                             items(allCategories) { category ->
                                 val isSelected = selectedCategories.contains(category)
-                                androidx.compose.material3.FilterChip(
+                                FilterChip(
                                     selected = isSelected,
                                     leadingIcon = if (isSelected) {
                                         {
@@ -1166,7 +1167,7 @@ fun ModalBottomSheetAddUrl(
                     ) {
                         items(allCategories) { category ->
                             val isSelected = selectedCategories.contains(category)
-                            androidx.compose.material3.FilterChip(
+                            FilterChip(
                                 selected = isSelected,
                                 leadingIcon = if (isSelected) {
                                     {
