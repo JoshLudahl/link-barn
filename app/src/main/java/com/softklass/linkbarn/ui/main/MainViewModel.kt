@@ -3,6 +3,7 @@ package com.softklass.linkbarn.ui.main
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.softklass.linkbarn.BuildConfig
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.data.repository.CategoryRepository
@@ -10,8 +11,6 @@ import com.softklass.linkbarn.data.repository.ClickedLinkRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.net.URI
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +23,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.net.URI
+import java.time.Instant
+import javax.inject.Inject
 
 enum class LinkFilter {
     ALL,
@@ -61,9 +63,6 @@ class MainViewModel @Inject constructor(
     private val _deletingLinkIds = MutableStateFlow<Set<String>>(emptySet())
     val deletingLinkIds: StateFlow<Set<String>> = _deletingLinkIds
 
-    private val _pendingDeletions = MutableStateFlow<Set<String>>(emptySet())
-    val pendingDeletions: StateFlow<Set<String>> = _pendingDeletions.asStateFlow()
-
     private val _sharedUrl = MutableStateFlow<String?>(null)
     val sharedUrl: StateFlow<String?> = _sharedUrl.asStateFlow()
 
@@ -84,12 +83,11 @@ class MainViewModel @Inject constructor(
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val links: StateFlow<List<Link>> = combine(
-        _currentFilter,
-        _selectedCategoryIds,
-        _pendingDeletions,
-    ) { filter, selectedCategoryIds, pendingDeletions ->
-        when (filter) {
+    val links: StateFlow<List<Link>> = _currentFilter.combine(_selectedCategoryIds) { filter, categories ->
+        Pair(filter, categories) // Combine triggers into a pair
+    }.flatMapLatest { (filter, selectedCategoryIds) ->
+        // Determine the base database flow based on filter and categories
+        val baseDbFlow: kotlinx.coroutines.flow.Flow<List<Link>> = when (filter) {
             LinkFilter.ALL -> linkRepository.getAllLinks()
             LinkFilter.VISITED -> linkRepository.getVisitedLinks()
             LinkFilter.UNVISITED -> linkRepository.getUnvisitedLinks()
@@ -97,27 +95,22 @@ class MainViewModel @Inject constructor(
                 if (selectedCategoryIds.isNotEmpty()) {
                     linkRepository.getLinksByCategories(selectedCategoryIds)
                 } else {
-                    // Return empty list when no categories are selected
                     flowOf(emptyList())
                 }
             }
         }
-    }.flatMapLatest { flow ->
-        combine(flow, _pendingDeletions) { links, pendingDeletions ->
-            // Filter out links that are pending deletion
-            links.filter { link -> link.id !in pendingDeletions }
-        }
+        baseDbFlow // Return the baseDbFlow directly without combining with _pendingDeletions
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList(),
     )
 
-//    init {
-//        if (BuildConfig.DEBUG) {
-//            populateTestData(20)
-//        }
-//    }
+    init {
+        if (BuildConfig.DEBUG) {
+            populateTestData(20)
+        }
+    }
 
     fun addLink(name: String, url: String, categoryNames: List<String> = emptyList()) {
         viewModelScope.launch(dispatcher) {
@@ -218,7 +211,7 @@ class MainViewModel @Inject constructor(
                     name = name,
                     uri = uri,
                     categoryIds = categoryIds,
-                    updated = java.time.Instant.now(),
+                    updated = Instant.now(),
                 )
                 linkRepository.updateLink(updatedLink)
                 _editLinkUiState.value = EditLinkUiState.Success
@@ -317,15 +310,32 @@ class MainViewModel @Inject constructor(
     }
 
     fun undoDelete() {
-        viewModelScope.launch {
+        viewModelScope.launch(dispatcher) {
+            _uiState.value = AddLinkUiState.Loading
             pendingDeletingLink?.let { link ->
-                addLink(
-                    name = link.name?.trim() ?: "Unnamed",
-                    url = link.uri.toString(),
-                    categoryNames = link.categoryIds.map { categoryId ->
-                        categoryRepository.getCategoryById(categoryId)?.name ?: "No Category"
-                    },
-                )
+//                addLink(
+//                    name = link.name?.trim() ?: "Unnamed",
+//                    url = link.uri.toString(),
+//                    categoryNames = link.categoryIds.map { categoryId ->
+//                        categoryRepository.getCategoryById(categoryId)?.name ?: "No Category"
+//                    },
+//                )
+//            }
+
+                try {
+                    linkRepository.insertLink(
+                        link.copy(
+                            updated = Instant.now(),
+                        ),
+                    )
+
+                    pendingDeletingLink = null // Clear the pending link
+                    Log.d("MainViewModel", "Link restored: ${link.name}")
+                    _uiState.value = AddLinkUiState.Success
+                } catch (e: Exception) {
+                    Log.e("MainViewModel", "Error undoing delete for link: ${link.name}", e)
+                    _uiState.value = AddLinkUiState.Error("Failed to undo delete")
+                }
             }
         }
     }
@@ -389,9 +399,4 @@ sealed class CategoryUiState {
     object Loading : CategoryUiState()
     object Success : CategoryUiState()
     data class Error(val message: String) : CategoryUiState()
-}
-
-sealed class SnackbarState {
-    object Hidden : SnackbarState()
-    data class Visible(val message: String, val linkName: String) : SnackbarState()
 }

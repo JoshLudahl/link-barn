@@ -506,7 +506,7 @@ private fun LinksContent(
         } else {
             items(
                 items = links,
-                key = { link -> link.id },
+                key = { link -> link.id + link.updated },
             ) { link ->
                 AnimatedVisibility(
                     visible = !deletingLinkIds.contains(link.id),
