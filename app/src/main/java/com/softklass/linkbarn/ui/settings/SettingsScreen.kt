@@ -251,9 +251,10 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "The Link Barn is inspired after the Barn Owl. It is a symbol of wisdom and knowledge.",
+                text = "The Link Barn is inspired after the Barn Owl. It is a symbol of wisdom and knowledge. The Link Barn is a barn for your wealth of links!",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 8.dp),
             )
 
             AttributionAnnotatedText()
