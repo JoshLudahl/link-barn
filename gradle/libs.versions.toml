@@ -1,6 +1,6 @@
 [versions]
 activityCompose = "1.10.1"
-androidApplication = "8.12.2"
+androidApplication = "8.13.0"
 androidKotlin = "2.2.10"
 androidxTestCore = "1.7.0"
 appUpdateKtx = "2.1.0"
