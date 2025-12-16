@@ -1,7 +1,7 @@
 [versions]
 activityCompose = "1.12.1"
 androidApplication = "8.13.2"
-androidKotlin = "2.2.21"
+androidKotlin = "2.3.0"
 androidxTestCore = "1.7.0"
 appUpdateKtx = "2.1.0"
 composeBom = "2025.12.00"
