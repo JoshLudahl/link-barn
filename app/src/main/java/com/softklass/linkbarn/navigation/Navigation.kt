@@ -16,18 +16,18 @@ import com.softklass.linkbarn.ui.settings.SettingsScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
-sealed interface Navigation {
+sealed interface Screen {
     @Serializable
-    data object Main : Navigation
+    data object Main : Screen
 
     @Serializable
-    data object Settings : Navigation
+    data object Settings : Screen
 
     @Serializable
-    data object Categories : Navigation
+    data object Categories : Screen
 
     @Serializable
-    data object Dashboard : Navigation
+    data object Dashboard : Screen
 }
 
 @Composable
@@ -35,11 +35,11 @@ fun AppNavHost() {
     val navController = rememberNavController()
     NavHost(
         navController = navController,
-        startDestination = Navigation.Main,
+        startDestination = Screen.Main,
         modifier = Modifier,
     ) {
         val animationTween = 350
-        composable<Navigation.Main>(
+        composable<Screen.Main>(
             exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Left,
@@ -48,21 +48,21 @@ fun AppNavHost() {
             },
             enterTransition = {
                 when (initialState.destination.route) {
-                    Navigation.Settings.toString() -> {
+                    Screen.Settings.toString() -> {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(animationTween),
                         )
                     }
 
-                    Navigation.Categories.toString() -> {
+                    Screen.Categories.toString() -> {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(animationTween),
                         )
                     }
 
-                    Navigation.Dashboard.toString() -> {
+                    Screen.Dashboard.toString() -> {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Right,
                             animationSpec = tween(animationTween),
@@ -81,18 +81,18 @@ fun AppNavHost() {
             MainScreen(
                 viewModel = hiltViewModel<MainViewModel>(),
                 onNavigateToSettings = {
-                    navController.navigate(Navigation.Settings)
+                    navController.navigate(Screen.Settings)
                 },
                 onNavigateToCategories = {
-                    navController.navigate(Navigation.Categories)
+                    navController.navigate(Screen.Categories)
                 },
                 onNavigateToDashboard = {
-                    navController.navigate(Navigation.Dashboard)
+                    navController.navigate(Screen.Dashboard)
                 },
             )
         }
 
-        composable<Navigation.Settings>(
+        composable<Screen.Settings>(
             exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Right,
@@ -113,7 +113,7 @@ fun AppNavHost() {
             )
         }
 
-        composable<Navigation.Categories>(
+        composable<Screen.Categories>(
             exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Right,
@@ -134,7 +134,7 @@ fun AppNavHost() {
             )
         }
 
-        composable<Navigation.Dashboard>(
+        composable<Screen.Dashboard>(
             exitTransition = {
                 slideOutOfContainer(
                     AnimatedContentTransitionScope.SlideDirection.Right,
