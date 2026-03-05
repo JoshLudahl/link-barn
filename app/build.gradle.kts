@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.ApplicationExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
 plugins {
@@ -10,7 +11,7 @@ plugins {
     alias(libs.plugins.kotlin.serializable)
 }
 
-android {
+configure<ApplicationExtension> {
     namespace = "com.softklass.linkbarn"
     compileSdk = 36
 
