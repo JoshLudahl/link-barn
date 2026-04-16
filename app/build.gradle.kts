@@ -13,7 +13,7 @@ plugins {
 
 configure<ApplicationExtension> {
     namespace = "com.softklass.linkbarn"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         javaCompileOptions {
@@ -27,7 +27,7 @@ configure<ApplicationExtension> {
         applicationId = "com.softklass.linkbarn"
         minSdk = 26
 
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 24
         versionName = "2025.12.16"
 
