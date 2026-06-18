@@ -28,8 +28,8 @@ configure<ApplicationExtension> {
         minSdk = 26
 
         targetSdk = 37
-        versionCode = 24
-        versionName = "2025.12.16"
+        versionCode = 25
+        versionName = "2026.06.18"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -40,6 +40,7 @@ configure<ApplicationExtension> {
     buildTypes {
         release {
             isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
