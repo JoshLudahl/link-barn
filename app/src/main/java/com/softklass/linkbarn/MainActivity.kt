@@ -37,6 +37,15 @@ class MainActivity : ComponentActivity() {
     private lateinit var aut: Task<AppUpdateInfo>
     private val updateType = AppUpdateType.FLEXIBLE
 
+    private val activityResultLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.StartIntentSenderForResult(),
+        ) { result ->
+            if (result.resultCode != RESULT_OK) {
+                Log.i("MainActivity", "The Update has failed.")
+            }
+        }
+
     companion object {
         var sharedUrl: String? = null
     }
@@ -59,6 +68,7 @@ class MainActivity : ComponentActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         // Handle shared URL intent
@@ -68,7 +78,6 @@ class MainActivity : ComponentActivity() {
         aut = appUpdateManager.appUpdateInfo
         checkIsUpdateAvailable()
 
-        enableEdgeToEdge()
         setContent {
             AppTheme(settingsPreferences = settingsPreferences) {
                 Surface(
@@ -96,15 +105,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkIsUpdateAvailable() {
-        val activityResultLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.StartIntentSenderForResult(),
-            ) { result ->
-                if (result.resultCode != RESULT_OK) {
-                    Log.i("MainActivity", "The Update has failed.")
-                }
-            }
-
         aut.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE &&
                 appUpdateInfo.isUpdateTypeAllowed(updateType)
@@ -122,5 +122,10 @@ class MainActivity : ComponentActivity() {
                 Log.i("MainActivity", "No Update Available.")
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        appUpdateManager.unregisterListener(listener)
     }
 }

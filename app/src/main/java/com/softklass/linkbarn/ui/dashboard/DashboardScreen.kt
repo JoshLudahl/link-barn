@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -101,15 +103,20 @@ fun DashboardScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
+                .fillMaxSize(),
         ) {
+            Spacer(modifier = Modifier.height(padding.calculateTopPadding()))
             if (clickedLinks.isEmpty()) {
                 EmptyDashboard()
             } else {
                 LazyVerticalGrid(
                     columns = GridCells.Fixed(numberOfColumns), // Fixed number of columns
-                    contentPadding = PaddingValues(16.dp),
+                    contentPadding = PaddingValues(
+                        top = 16.dp,
+                        bottom = 16.dp + padding.calculateBottomPadding(),
+                        start = 16.dp,
+                        end = 16.dp,
+                    ),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier.fillMaxSize(), // Allow grid to take up available space

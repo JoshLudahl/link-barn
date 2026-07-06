@@ -4,9 +4,12 @@ import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -125,14 +128,17 @@ fun CategoriesScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
+                .fillMaxSize(),
         ) {
+            Spacer(modifier = Modifier.height(paddingValues.calculateTopPadding()))
             if (categories.isEmpty()) {
                 EmptyState()
             } else {
                 ShowList(
                     categories = categories,
+                    contentPadding = PaddingValues(
+                        bottom = paddingValues.calculateBottomPadding(),
+                    ),
                     onSwipeRightToLeft = {
                         viewModel.deleteCategory(it)
 
@@ -351,11 +357,13 @@ fun CategoryDialog(
 @Composable
 fun ShowList(
     categories: List<Category> = emptyList(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     onSwipeRightToLeft: (Category) -> Unit,
     onSwipeLeftToRight: (Category) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
+        contentPadding = contentPadding,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         items(categories, key = { it.id }) { category ->

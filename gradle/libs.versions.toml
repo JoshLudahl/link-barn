@@ -32,6 +32,7 @@ navigationCompose = "2.9.8"
 playReviewKtx = "2.0.2"
 roomVersion = "2.8.4"
 uiTextGoogleFonts = "1.11.3"
+foundationLayout = "1.11.4"
 
 [libraries]
 # AndroidX - Activity
@@ -106,6 +107,7 @@ junit = { module = "junit:junit", version.ref = "junit" }
 mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockitoAndroid" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
 mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 
 
 [plugins]

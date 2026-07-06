@@ -112,6 +112,7 @@ tasks.named("preBuild") {
 }
 
 dependencies {
+    implementation(libs.androidx.compose.foundation.layout)
     implementation(libs.androidx.ui.text.google.fonts)
     implementation(libs.app.update.ktx)
     implementation(libs.play.review.ktx)
