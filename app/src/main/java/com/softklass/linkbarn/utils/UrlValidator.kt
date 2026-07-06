@@ -8,7 +8,7 @@ object UrlValidator {
     // Regular expression for basic URL validation (simplified version of Patterns.WEB_URL)
     private val WEB_URL_PATTERN = Pattern.compile(
         "^(https?://)" + // scheme
-            "([a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,})" + // hostname
+            "([a-zA-Z0-9\\-\\.]+)" + // hostname
             "(:\\d{1,5})?" + // port
             "(/[a-zA-Z0-9\\-\\._~:/?#\\[\\]@!$&'()*+,;=]*)?" + // path
             "$",

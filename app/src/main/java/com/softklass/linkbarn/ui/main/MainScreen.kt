@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,7 +30,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -43,7 +43,6 @@ import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ButtonGroupDefaults
@@ -52,10 +51,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingToolbarDefaults
+import androidx.compose.material3.FloatingToolbarExitDirection
+import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -105,6 +107,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.MainActivity
@@ -160,6 +163,9 @@ fun EnterAlwaysTopAppBar(
     openBottomSheet: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val floatingToolbarScrollBehavior = FloatingToolbarDefaults.exitAlwaysScrollBehavior(
+        exitDirection = FloatingToolbarExitDirection.Bottom,
+    )
     val coroutineScope = rememberCoroutineScope()
     val listState = rememberLazyListState()
     val links by viewModel.links.collectAsState()
@@ -174,7 +180,9 @@ fun EnterAlwaysTopAppBar(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = Modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+            .nestedScroll(floatingToolbarScrollBehavior),
         topBar = {
             TopAppBar(
                 title = {
@@ -189,53 +197,6 @@ fun EnterAlwaysTopAppBar(
                 scrollBehavior = scrollBehavior,
                 actions = {
                     TopAppBarIcon { shareAppIntent(context) }
-                },
-            )
-        },
-        bottomBar = {
-            BottomAppBar(
-                containerColor = MaterialTheme.colorScheme.surface,
-                actions = {
-                    IconButton(onClick = { onNavigateToCategories() }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Category,
-                            contentDescription = "Categories",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-
-                    IconButton(onClick = { onNavigateToDashboard() }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Dashboard,
-                            contentDescription = "Dashboard",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-
-                    IconButton(onClick = { onNavigateToSettings() }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Settings,
-                            contentDescription = "Settings",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-
-                    IconButton(onClick = { shareAppIntent(context) }) {
-                        Icon(
-                            imageVector = Icons.Rounded.Share,
-                            contentDescription = "Share this application.",
-                            tint = MaterialTheme.colorScheme.onSurface,
-                        )
-                    }
-                },
-                floatingActionButton = {
-                    ExtendedFloatingActionButton(
-                        onClick = openBottomSheet,
-                        icon = { Icon(Icons.Rounded.Add, "Add a Link", tint = MaterialTheme.colorScheme.onPrimary) },
-                        text = { Text(text = "Add a Link") },
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        shape = RoundedCornerShape(16.dp),
-                    )
                 },
             )
         },
@@ -275,10 +236,55 @@ fun EnterAlwaysTopAppBar(
                         },
                         links = links.sortedBy { it.created },
                         contentPadding = PaddingValues(
-                            bottom = innerPadding.calculateBottomPadding(),
+                            bottom = innerPadding.calculateBottomPadding() + 96.dp,
                         ),
                     )
                 }
+
+                HorizontalFloatingToolbar(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .offset(y = -FloatingToolbarDefaults.ScreenOffset)
+                        .zIndex(1f),
+                    expanded = true,
+                    leadingContent = {
+                        IconButton(onClick = { onNavigateToDashboard() }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Dashboard,
+                                contentDescription = "Dashboard",
+                            )
+                        }
+                        IconButton(onClick = { onNavigateToCategories() }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Category,
+                                contentDescription = "Categories",
+                            )
+                        }
+                    },
+                    trailingContent = {
+                        IconButton(onClick = { onNavigateToSettings() }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Settings,
+                                contentDescription = "Settings",
+                            )
+                        }
+                        IconButton(onClick = { shareAppIntent(context) }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = "Share this application.",
+                            )
+                        }
+                    },
+                    content = {
+                        FilledIconButton(
+                            modifier = Modifier.width(64.dp),
+                            onClick = openBottomSheet,
+                        ) {
+                            Icon(Icons.Rounded.Add, contentDescription = "Add a Link")
+                        }
+                    },
+                    scrollBehavior = floatingToolbarScrollBehavior,
+                )
 
                 AnimatedVisibility(
                     visible = isTopAppBarOffScreen,
@@ -339,11 +345,11 @@ private fun CollapsingHeader(viewModel: MainViewModel, isTopAppBarOffScreen: Boo
                         modifier = Modifier.weight(1f),
 
                         shapes =
-                        when (index) {
-                            0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                            options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                            else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                        },
+                            when (index) {
+                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                            },
                     ) {
                         if (currentFilter == label) {
                             Icon(
@@ -623,10 +629,10 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                         singleLine = true,
                         colors = TextFieldDefaults.colors(),
                         keyboardOptions =
-                        KeyboardOptions(
-                            imeAction = ImeAction.Done,
-                            capitalization = KeyboardCapitalization.Sentences,
-                        ),
+                            KeyboardOptions(
+                                imeAction = ImeAction.Done,
+                                capitalization = KeyboardCapitalization.Sentences,
+                            ),
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -872,7 +878,7 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                     containerColor = MaterialTheme.colorScheme.primary,
                                 ),
 
-                            ) {
+                                ) {
                                 Icon(
                                     imageVector = Icons.Rounded.Share,
                                     contentDescription = "Share link",
