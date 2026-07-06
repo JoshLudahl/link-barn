@@ -25,11 +25,11 @@ configure<ApplicationExtension> {
             }
         }
         applicationId = "com.softklass.linkbarn"
-        minSdk = 26
+        minSdk = 30
 
         targetSdk = 37
-        versionCode = 25
-        versionName = "2026.06.18"
+        versionCode = 26
+        versionName = "2026.07.06"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
