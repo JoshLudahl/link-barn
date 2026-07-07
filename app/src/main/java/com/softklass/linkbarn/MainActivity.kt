@@ -8,7 +8,9 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.softklass.linkbarn.data.preferences.SettingsPreferences
@@ -51,9 +53,15 @@ class MainActivity : ComponentActivity() {
         setContent {
             AppTheme(settingsPreferences = settingsPreferences) {
                 Surface(
-                    modifier = Modifier.fillMaxSize().systemBarsPadding(),
+                    modifier = Modifier.fillMaxSize(),
                 ) {
-                    AppNavHost()
+                    Scaffold(
+                        modifier = Modifier.systemBarsPadding(),
+                    ) { padding ->
+                        AppNavHost(
+                            modifier = Modifier.padding(padding),
+                        )
+                    }
                 }
             }
         }

@@ -31,8 +31,11 @@ sealed interface Screen {
 }
 
 @Composable
-fun AppNavHost() {
+fun AppNavHost(
+    modifier: Modifier = Modifier,
+) {
     val navController = rememberNavController()
+
     NavHost(
         navController = navController,
         startDestination = Screen.Main,
