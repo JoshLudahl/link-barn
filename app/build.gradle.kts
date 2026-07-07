@@ -4,6 +4,7 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.android.kotlin)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
     alias(libs.plugins.ktlint)
@@ -27,8 +28,8 @@ configure<ApplicationExtension> {
         minSdk = 30
 
         targetSdk = 37
-        versionCode = 26
-        versionName = "2026.07.06"
+        versionCode = 28
+        versionName = "2026.07.06.1758"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
