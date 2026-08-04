@@ -52,6 +52,7 @@ import com.softklass.linkbarn.ui.partials.TopAppBarIcon
 import com.softklass.linkbarn.ui.theme.ThemeMode
 import com.softklass.linkbarn.utils.shareAppIntent
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -83,7 +84,7 @@ fun SettingsScreen(
 
                                 // Re-enable the button after a delay (if needed)
                                 scope.launch {
-                                    kotlinx.coroutines.delay(500) // 500ms delay
+                                    kotlinx.coroutines.delay(500.milliseconds) // 500ms delay
                                     isBackButtonEnabled = true
                                 }
                             }
