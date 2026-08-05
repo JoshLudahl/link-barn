@@ -61,8 +61,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.ui.partials.SwipeToDismissContainer
-import com.softklass.linkbarn.ui.partials.TopAppBarIcon
-import com.softklass.linkbarn.utils.shareAppIntent
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
