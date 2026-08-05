@@ -115,7 +115,6 @@ import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
 import com.softklass.linkbarn.data.model.Link
 import com.softklass.linkbarn.ui.partials.DismissBackground
-import com.softklass.linkbarn.ui.partials.TopAppBarIcon
 import com.softklass.linkbarn.utils.shareAppIntent
 import kotlinx.coroutines.launch
 
@@ -195,9 +194,6 @@ fun EnterAlwaysTopAppBar(
                 },
                 subtitle = { Text("Your saved links.", maxLines = 1, overflow = TextOverflow.Ellipsis) },
                 scrollBehavior = scrollBehavior,
-                actions = {
-                    TopAppBarIcon { shareAppIntent(context) }
-                },
             )
         },
         content = { innerPadding ->

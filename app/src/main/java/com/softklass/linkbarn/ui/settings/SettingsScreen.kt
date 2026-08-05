@@ -51,8 +51,8 @@ import com.google.android.material.color.DynamicColors
 import com.softklass.linkbarn.ui.partials.TopAppBarIcon
 import com.softklass.linkbarn.ui.theme.ThemeMode
 import com.softklass.linkbarn.utils.shareAppIntent
-import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable

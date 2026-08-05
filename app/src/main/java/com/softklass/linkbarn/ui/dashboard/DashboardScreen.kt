@@ -95,9 +95,6 @@ fun DashboardScreen(
                         )
                     }
                 },
-                actions = {
-                    TopAppBarIcon { shareAppIntent(context) }
-                },
             )
         },
     ) { padding ->

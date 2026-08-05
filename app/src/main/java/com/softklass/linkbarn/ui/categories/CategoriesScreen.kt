@@ -95,9 +95,6 @@ fun CategoriesScreen(
                         )
                     }
                 },
-                actions = {
-                    TopAppBarIcon { shareAppIntent(context) }
-                },
             )
         },
 
