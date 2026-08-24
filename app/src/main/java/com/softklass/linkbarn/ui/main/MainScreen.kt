@@ -850,94 +850,27 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                 }
             } else {
                 // View mode UI
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 16.dp),
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top,
                     ) {
                         Text(
                             text = link.name ?: "Untitled",
                             fontSize = 18.sp,
                             fontWeight = if (link.visited) FontWeight.Normal else FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f),
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = link.uri.toString(),
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        ) {
-                            // Display unviewed/viewed label
-                            Text(
-                                text = if (link.visited) "Viewed" else "Unviewed",
-                                fontSize = 10.sp,
-                                color = if (link.visited) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.tertiary
-                                },
-                                fontWeight = FontWeight.Normal,
-                            )
-
-                            // Display categories if any
-                            if (link.categoryIds.isNotEmpty()) {
-                                val categories = remember(link.categoryIds) {
-                                    mutableStateOf<List<Category>>(emptyList())
-                                }
-
-                                // Load categories for this link
-                                LaunchedEffect(link.categoryIds) {
-                                    categories.value = viewModel.getCategoriesForLink(link)
-                                }
-
-                                LazyRow(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    modifier = Modifier.padding(start = 8.dp),
-                                ) {
-                                    items(categories.value) { category ->
-                                        SuggestionChip(
-                                            modifier = Modifier.height(24.dp),
-                                            colors = SuggestionChipDefaults.suggestionChipColors(
-                                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                                                labelColor = MaterialTheme.colorScheme.onSurface,
-                                            ),
-                                            border = BorderStroke(
-                                                width = 1.dp,
-                                                color = Color.Transparent,
-                                            ),
-                                            onClick = { },
-                                            label = {
-                                                Text(
-                                                    text = category.name,
-                                                    fontSize = 10.sp,
-                                                )
-                                            },
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    Column(
-                        horizontalAlignment = Alignment.End,
-                    ) {
                         Box {
                             IconButton(
                                 onClick = { showMenu = true },
+                                modifier = Modifier.size(24.dp),
                             ) {
                                 Icon(
                                     imageVector = Icons.Rounded.MoreVert,
@@ -994,6 +927,69 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                         )
                                     },
                                 )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = link.uri.toString(),
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    ) {
+                        // Display unviewed/viewed label
+                        Text(
+                            text = if (link.visited) "Viewed" else "Unviewed",
+                            fontSize = 10.sp,
+                            color = if (link.visited) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.tertiary
+                            },
+                            fontWeight = FontWeight.Normal,
+                        )
+
+                        // Display categories if any
+                        if (link.categoryIds.isNotEmpty()) {
+                            val categories = remember(link.categoryIds) {
+                                mutableStateOf<List<Category>>(emptyList())
+                            }
+
+                            // Load categories for this link
+                            LaunchedEffect(link.categoryIds) {
+                                categories.value = viewModel.getCategoriesForLink(link)
+                            }
+
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.padding(start = 8.dp),
+                            ) {
+                                items(categories.value) { category ->
+                                    SuggestionChip(
+                                        modifier = Modifier.height(24.dp),
+                                        colors = SuggestionChipDefaults.suggestionChipColors(
+                                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                                            labelColor = MaterialTheme.colorScheme.onSurface,
+                                        ),
+                                        border = BorderStroke(
+                                            width = 1.dp,
+                                            color = Color.Transparent,
+                                        ),
+                                        onClick = { },
+                                        label = {
+                                            Text(
+                                                text = category.name,
+                                                fontSize = 10.sp,
+                                            )
+                                        },
+                                    )
+                                }
                             }
                         }
                     }
