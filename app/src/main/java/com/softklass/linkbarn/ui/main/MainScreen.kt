@@ -41,6 +41,7 @@ import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Dashboard
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.EditNote
 import androidx.compose.material.icons.rounded.MoreVert
@@ -976,6 +977,20 @@ fun LinkItem(link: Link, viewModel: MainViewModel, onDelete: (Link) -> Unit) {
                                         Icon(
                                             imageVector = Icons.Rounded.EditNote,
                                             contentDescription = null,
+                                        )
+                                    },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Delete") },
+                                    onClick = {
+                                        showMenu = false
+                                        onDelete(link)
+                                    },
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Delete,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.error,
                                         )
                                     },
                                 )
