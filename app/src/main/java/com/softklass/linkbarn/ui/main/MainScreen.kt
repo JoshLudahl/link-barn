@@ -68,6 +68,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -83,7 +84,7 @@ import androidx.compose.material3.ToggleButton
 import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -112,7 +113,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.softklass.linkbarn.MainActivity
 import com.softklass.linkbarn.R
 import com.softklass.linkbarn.data.model.Category
@@ -1079,7 +1080,7 @@ fun CategoryDialog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModalBottomSheetAddUrl(
-    viewModel: MainViewModel = hiltViewModel(),
+    viewModel: MainViewModel = hiltViewModel<MainViewModel>(),
     openBottomSheet: Boolean = false,
     onOpenBottomSheetChange: (Boolean) -> Unit = {},
 ) {
@@ -1089,7 +1090,7 @@ fun ModalBottomSheetAddUrl(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
-    val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val bottomSheetState = rememberBottomSheetState(initialValue = SheetValue.Hidden, enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded))
     val nameFocusRequester = remember { FocusRequester() }
 
     val uiState by viewModel.uiState.collectAsState()
