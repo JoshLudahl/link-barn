@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -60,6 +61,9 @@ class MainViewModel @Inject constructor(
     private val _selectedCategories = MutableStateFlow<List<Category>>(emptyList())
     val selectedCategories: StateFlow<List<Category>> = _selectedCategories
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     private val _sharedUrl = MutableStateFlow<String?>(null)
     val sharedUrl: StateFlow<String?> = _sharedUrl.asStateFlow()
 
@@ -80,10 +84,13 @@ class MainViewModel @Inject constructor(
     )
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val links: StateFlow<List<Link>> = _currentFilter.combine(_selectedCategoryIds) { filter, categories ->
-        Pair(filter, categories) // Combine triggers into a pair
-    }.flatMapLatest { (filter, selectedCategoryIds) ->
-        // Determine the base database flow based on filter and categories
+    val links: StateFlow<List<Link>> = combine(
+        _currentFilter,
+        _selectedCategoryIds,
+        _searchQuery,
+    ) { filter, categories, query ->
+        Triple(filter, categories, query)
+    }.flatMapLatest { (filter, selectedCategoryIds, query) ->
         val baseDbFlow: Flow<List<Link>> = when (filter) {
             LinkFilter.ALL -> linkRepository.getAllLinks()
             LinkFilter.VISITED -> linkRepository.getVisitedLinks()
@@ -96,7 +103,17 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-        baseDbFlow // Return the baseDbFlow directly without combining with _pendingDeletions
+
+        if (query.isBlank()) {
+            baseDbFlow
+        } else {
+            baseDbFlow.map { links ->
+                links.filter { link ->
+                    link.name?.contains(query, ignoreCase = true) == true ||
+                        link.uri.toString().contains(query, ignoreCase = true)
+                }
+            }
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -357,6 +374,10 @@ class MainViewModel @Inject constructor(
                 Log.e("MainViewModel", "Error marking link as visited or recording click", e)
             }
         }
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 
     fun setSharedUrl(url: String) {

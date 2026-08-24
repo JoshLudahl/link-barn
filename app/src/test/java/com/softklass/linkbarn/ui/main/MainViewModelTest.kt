@@ -8,6 +8,7 @@ import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
 import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -16,8 +17,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 @ExperimentalCoroutinesApi
 class MainViewModelTest {
@@ -119,5 +122,39 @@ class MainViewModelTest {
     fun `sharedUrl should initially be null`() = runTest {
         // Then
         assertNull(viewModel.sharedUrl.value)
+    }
+
+    @Test
+    fun `links flow should filter by search query`() = runTest {
+        // Given
+        val link1 = Link(name = "Google", uri = URI("https://google.com"))
+        val link2 = Link(name = "Android", uri = URI("https://android.com"))
+        val allLinks = listOf(link1, link2)
+        whenever(linkDataRepository.getAllLinks()).doReturn(flowOf(allLinks))
+
+        // When
+        viewModel.onSearchQueryChanged("goog")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        val filteredLinks = viewModel.links.value
+        assertEquals(1, filteredLinks.size)
+        assertEquals("Google", filteredLinks[0].name)
+    }
+
+    @Test
+    fun `links flow should be case insensitive`() = runTest {
+        // Given
+        val link1 = Link(name = "Google", uri = URI("https://google.com"))
+        val allLinks = listOf(link1)
+        whenever(linkDataRepository.getAllLinks()).doReturn(flowOf(allLinks))
+
+        // When
+        viewModel.onSearchQueryChanged("GOOGLE")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        val filteredLinks = viewModel.links.value
+        assertEquals(1, filteredLinks.size)
     }
 }
