@@ -39,7 +39,7 @@ fun AppNavHost(
     NavHost(
         navController = navController,
         startDestination = Screen.Main,
-        modifier = Modifier,
+        modifier = modifier,
     ) {
         val animationTween = 350
         composable<Screen.Main>(

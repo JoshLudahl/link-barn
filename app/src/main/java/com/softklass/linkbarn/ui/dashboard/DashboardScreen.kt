@@ -6,10 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -40,16 +38,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.softklass.linkbarn.data.model.Link
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun DashboardScreen(
     onNavigateBack: () -> Unit = {},
-    viewModel: DashboardViewModel = hiltViewModel(),
+    viewModel: DashboardViewModel = hiltViewModel<DashboardViewModel>(),
 ) {
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -80,7 +79,7 @@ fun DashboardScreen(
                                 onNavigateBack()
 
                                 scope.launch {
-                                    delay(500) // 500ms delay
+                                    delay(500.milliseconds) // 500ms delay
                                     isBackButtonEnabled = true
                                 }
                             }
@@ -98,9 +97,9 @@ fun DashboardScreen(
     ) { padding ->
         Column(
             modifier = Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(padding),
         ) {
-            Spacer(modifier = Modifier.height(padding.calculateTopPadding()))
             if (clickedLinks.isEmpty()) {
                 EmptyDashboard()
             } else {

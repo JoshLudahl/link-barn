@@ -278,9 +278,10 @@ fun EnterAlwaysTopAppBar(
         content = { innerPadding ->
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
                 ) {
-                    Spacer(modifier = Modifier.height(innerPadding.calculateTopPadding()))
                     CollapsingHeader(viewModel = viewModel, isTopAppBarOffScreen = isTopAppBarOffScreen)
                     LinksContent(
                         viewModel = viewModel,

@@ -7,12 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
 import com.softklass.linkbarn.data.preferences.SettingsPreferences
 import com.softklass.linkbarn.navigation.AppNavHost
 import com.softklass.linkbarn.ui.theme.AppTheme
@@ -41,8 +35,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
         // Handle shared URL intent
         handleIntent(intent)
 
@@ -51,17 +45,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             AppTheme(settingsPreferences = settingsPreferences) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    Scaffold(
-                        modifier = Modifier.systemBarsPadding(),
-                    ) { padding ->
-                        AppNavHost(
-                            modifier = Modifier.padding(padding),
-                        )
-                    }
-                }
+                AppNavHost()
             }
         }
     }
