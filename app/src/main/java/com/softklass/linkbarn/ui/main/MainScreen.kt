@@ -320,6 +320,7 @@ fun EnterAlwaysTopAppBar(
                 HorizontalFloatingToolbar(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
+                        .padding(bottom = innerPadding.calculateBottomPadding())
                         .offset(y = -FloatingToolbarDefaults.ScreenOffset)
                         .zIndex(1f),
                     expanded = true,
