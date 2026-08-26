@@ -39,8 +39,9 @@ configure<ApplicationExtension> {
 
     buildTypes {
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            optimization {
+                enable = true
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -48,7 +49,9 @@ configure<ApplicationExtension> {
         }
 
         debug {
-            isMinifyEnabled = false
+            optimization {
+                enable = false
+            }
             applicationIdSuffix = ".debug"
             versionNameSuffix = " debug"
             resValue(type = "string", name = "app_name", value = "Link Barn debug")
