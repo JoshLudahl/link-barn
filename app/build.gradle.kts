@@ -25,7 +25,7 @@ configure<ApplicationExtension> {
             }
         }
         applicationId = "com.softklass.linkbarn"
-        minSdk = 30
+        minSdk = 32
 
         targetSdk = 37
         versionCode = 34
