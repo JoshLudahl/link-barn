@@ -51,6 +51,7 @@ import com.google.android.material.color.DynamicColors
 import com.softklass.linkbarn.ui.partials.TopAppBarIcon
 import com.softklass.linkbarn.ui.theme.ThemeMode
 import com.softklass.linkbarn.utils.shareAppIntent
+import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.launch
 
@@ -84,7 +85,7 @@ fun SettingsScreen(
 
                                 // Re-enable the button after a delay (if needed)
                                 scope.launch {
-                                    kotlinx.coroutines.delay(500.milliseconds) // 500ms delay
+                                    delay(500.milliseconds) // 500ms delay
                                     isBackButtonEnabled = true
                                 }
                             }
