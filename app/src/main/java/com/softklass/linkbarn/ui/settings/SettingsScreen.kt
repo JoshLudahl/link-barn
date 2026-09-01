@@ -52,8 +52,8 @@ import com.softklass.linkbarn.ui.partials.TopAppBarIcon
 import com.softklass.linkbarn.ui.theme.ThemeMode
 import com.softklass.linkbarn.utils.shareAppIntent
 import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -157,11 +157,11 @@ fun SettingsScreen(
                                 modifier = Modifier.weight(1f),
 
                                 shapes =
-                                when (index) {
-                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                                },
+                                    when (index) {
+                                        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                        else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                    },
                             ) {
                                 if (dynamicColorEnabled && label == "Dynamic" || !dynamicColorEnabled && label == "Default") {
                                     Icon(
@@ -213,11 +213,11 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f),
 
                             shapes =
-                            when (index) {
-                                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                                options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-                            },
+                                when (index) {
+                                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                                },
                         ) {
                             if (themeMode == label) {
                                 Icon(
