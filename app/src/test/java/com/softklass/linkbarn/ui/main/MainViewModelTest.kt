@@ -6,6 +6,7 @@ import com.softklass.linkbarn.data.repository.CategoryRepository
 import com.softklass.linkbarn.data.repository.ClickedLinkRepository
 import com.softklass.linkbarn.data.repository.LinkDataRepository
 import com.softklass.linkbarn.utils.UrlValidator
+import java.net.URI
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -17,7 +18,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import java.net.URI
 
 @ExperimentalCoroutinesApi
 class MainViewModelTest {
