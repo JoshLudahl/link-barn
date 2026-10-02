@@ -120,4 +120,20 @@ class MainViewModelTest {
         // Then
         assertNull(viewModel.sharedUrl.value)
     }
+
+    @Test
+    fun `addLink with domain without scheme should format URL and insert link`() = runTest {
+        // When
+        viewModel.addLink("SoftKlass", "softklass.com")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Then
+        assertTrue(viewModel.uiState.value is AddLinkUiState.Success)
+        verify(linkDataRepository).insertLink(
+            org.mockito.kotlin.check {
+                assertEquals("SoftKlass", it.name)
+                assertEquals(URI("https://www.softklass.com"), it.uri)
+            },
+        )
+    }
 }

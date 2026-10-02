@@ -33,13 +33,15 @@ class TestMainViewModel(
                 return@runBlocking
             }
 
-            if (!UrlValidator.isValid(url)) {
+            val formattedUrl = UrlValidator.formatUrl(url)
+
+            if (!UrlValidator.isValid(formattedUrl)) {
                 _uiState.value = AddLinkUiState.Error("Invalid URL format. URL must be a valid http:// or https:// address")
                 return@runBlocking
             }
 
             try {
-                val uri = URI(url)
+                val uri = URI(formattedUrl)
 
                 // Check if URL already exists
                 if (linkRepository.getLinkByUri(uri) != null) {

@@ -141,14 +141,16 @@ class MainViewModel @Inject constructor(
                     return@launch
                 }
 
-                if (!UrlValidator.isValid(url)) {
+                val formattedUrl = UrlValidator.formatUrl(url)
+
+                if (!UrlValidator.isValid(formattedUrl)) {
                     _uiState.value = AddLinkUiState.Error(
                         "Invalid URL format. URL must be a valid http:// or https:// address",
                     )
                     return@launch
                 }
 
-                val uri = URI(url)
+                val uri = URI(formattedUrl)
 
                 // Check if URL already exists
                 val existingLink = linkRepository.getLinkByUri(uri)
@@ -199,14 +201,16 @@ class MainViewModel @Inject constructor(
                     return@launch
                 }
 
-                if (!UrlValidator.isValid(url)) {
+                val formattedUrl = UrlValidator.formatUrl(url)
+
+                if (!UrlValidator.isValid(formattedUrl)) {
                     _editLinkUiState.value = EditLinkUiState.Error(
                         "Invalid URL format. URL must be a valid http:// or https:// address",
                     )
                     return@launch
                 }
 
-                val uri = URI(url)
+                val uri = URI(formattedUrl)
 
                 // Check if URL already exists and it's not the same link
                 val existingLink = linkRepository.getLinkByUri(uri)
