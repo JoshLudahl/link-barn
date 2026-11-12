@@ -16,3 +16,4 @@ local.properties
 *.log
 *.jks
 *.aab
+/app/release/
