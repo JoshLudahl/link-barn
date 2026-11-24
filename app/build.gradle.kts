@@ -14,6 +14,7 @@ plugins {
 configure<ApplicationExtension> {
     namespace = "com.softklass.linkbarn"
     compileSdk = 37
+    compileSdkMinor = 2
 
     defaultConfig {
         javaCompileOptions {
